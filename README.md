@@ -55,7 +55,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
 
-Your Name - [@ar90n](https://twitter.com/ar90n) - argon.argon.argon@gmail.com
+Masahiro Wada - [@ar90n](https://twitter.com/ar90n) - argon.argon.argon@gmail.com
 
 Project Link: [https://github.com/ar90n/paaaaath](https://github.com/ar90n/paaaaath)
 
