@@ -4,7 +4,8 @@ import pickle
 import pytest
 
 import paaaaath
-from paaaaath.http import PureHttpPath, PureUriPath
+from paaaaath.http import PureHttpPath
+from paaaaath.uri import PureUriPath
 
 pure_path_classes = [(PureUriPath,), (PureHttpPath,)]
 
