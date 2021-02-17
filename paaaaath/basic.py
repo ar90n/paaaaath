@@ -2,6 +2,7 @@ import os
 import pathlib
 from pathlib import PurePosixPath, PureWindowsPath
 
+
 class Path(pathlib.Path):
     def __new__(cls, *args, **kwargs):
         cls = cls.get_path_cls(*args)
@@ -18,8 +19,11 @@ class Path(pathlib.Path):
         if cls is not Path:
             return cls
 
-        if 0 < len(args) and (args[0].startswith("http://") or args[0].startswith("https://")):
+        if 0 < len(args) and (
+            args[0].startswith("http://") or args[0].startswith("https://")
+        ):
             from .http import HttpPath
+
             return HttpPath
 
         return WindowsPath if os.name == "nt" else PosixPath

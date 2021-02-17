@@ -1,15 +1,16 @@
-from os import fsencode, utime
-import posixpath
 import fnmatch
-from smart_open import smart_open_lib
-import re
-from urllib.parse import urlparse, quote_from_bytes
 import pathlib
+import posixpath
+import re
+from os import fsencode, utime
+from urllib.parse import quote_from_bytes, urlparse
+
+from smart_open import smart_open_lib
 
 from .basic import Path
 
 
-class _HttpFlavour(pathlib._Flavour):
+class _UriFlavour(pathlib._Flavour):
     sep = "/"
     altsep = ""
     has_drv = True
@@ -19,11 +20,6 @@ class _HttpFlavour(pathlib._Flavour):
 
     def splitroot(self, part, sep=sep):
         url = urlparse(part)
-        if url.scheme not in ["", "http", "https"]:
-            raise ValueError(
-                f"http and https are only supported. but {url.scheme} was given."
-            )
-
         scheme = url.scheme
         netloc = url.netloc
         path = url.path
@@ -61,18 +57,31 @@ class _HttpFlavour(pathlib._Flavour):
         raise NotImplementedError("gethomedir() not available on this system")
 
 
+_uri_flavour = _UriFlavour()
+
+
+class PureUriPath(pathlib.PurePath):
+    _flavour = _uri_flavour
+    __slots__ = ()
+
+
+class _HttpFlavour(_UriFlavour):
+    def splitroot(self, part, sep=None):
+        sep = self.sep if sep is None else sep
+        drv, root, part = super().splitroot(part, sep)
+
+        if not any((drv.startswith(p) for p in ["", "http", "https"])):
+            raise ValueError(f"http and https are only supported. but {drv} was given.")
+
+        return drv, root, part
+
+
 _http_flavour = _HttpFlavour()
 
 
 class PureHttpPath(pathlib.PurePath):
     _flavour = _http_flavour
     __slots__ = ()
-
-    def relative_to(self, *other):
-        raise NotImplementedError("relative_to is not implemented.")
-
-    def is_relative_to(self, *other) -> bool:
-        return False
 
 
 class _HttpAccessor(pathlib._Accessor):
@@ -159,6 +168,15 @@ class HttpPath(Path, PureHttpPath):
 
     def open(self, *args, **kwargs):
         return smart_open_lib.open(str(self), *args, **kwargs)
+
+    def exists(self):
+        from requests.exceptions import HTTPError
+
+        try:
+            self.open()
+        except HTTPError:
+            return False
+        return True
 
     def is_mount(self):
         raise NotImplementedError("Path.is_mount() is unsupported on this system")

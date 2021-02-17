@@ -4,10 +4,9 @@ import pickle
 import pytest
 
 import paaaaath
-from paaaaath.http import _http_flavour, PureHttpPath
+from paaaaath.http import PureHttpPath, PureUriPath
 
-
-pure_path_classes = [(PureHttpPath,)]
+pure_path_classes = [(PureUriPath,), (PureHttpPath,)]
 
 
 class FakePath:
@@ -30,41 +29,61 @@ class FakePath:
             return self.path
 
 
-@pytest.mark.parametrize(["flavour"], [(_http_flavour,)])
-def test_flavour_check_parse_parts(check_parse_parts, flavour):
-    sep = flavour.sep
-    # Unanchored parts.
-    check_parse_parts(flavour, [], ("", "", []))
-    check_parse_parts(flavour, ["a"], ("", "", ["a"]))
-    check_parse_parts(flavour, ["a/"], ("", "", ["a"]))
-    check_parse_parts(flavour, ["a", "b"], ("", "", ["a", "b"]))
-    # Expansion.
-    check_parse_parts(flavour, ["a/b"], ("", "", ["a", "b"]))
-    check_parse_parts(flavour, ["a/b/"], ("", "", ["a", "b"]))
-    check_parse_parts(flavour, ["a", "b/c", "d"], ("", "", ["a", "b", "c", "d"]))
-    # Collapsing and stripping excess slashes.
-    check_parse_parts(flavour, ["a", "b//c", "d"], ("", "", ["a", "b", "c", "d"]))
-    check_parse_parts(flavour, ["a", "b/c/", "d"], ("", "", ["a", "b", "c", "d"]))
-    # Eliminating standalone dots.
-    check_parse_parts(flavour, ["."], ("", "", []))
-    check_parse_parts(flavour, [".", ".", "b"], ("", "", ["b"]))
-    check_parse_parts(flavour, ["a", ".", "b"], ("", "", ["a", "b"]))
-    check_parse_parts(flavour, ["a", ".", "."], ("", "", ["a"]))
-    # The first part is anchored.
-    check_parse_parts(flavour, ["/a/b"], ("", sep, [sep, "a", "b"]))
-    check_parse_parts(flavour, ["/a", "b"], ("", sep, [sep, "a", "b"]))
-    check_parse_parts(flavour, ["/a/", "b"], ("", sep, [sep, "a", "b"]))
-    # Ignoring parts before an anchored part.
-    check_parse_parts(flavour, ["a", "/b", "c"], ("", sep, [sep, "b", "c"]))
-    check_parse_parts(flavour, ["a", "/b", "/c"], ("", sep, [sep, "c"]))
-    # special case
-    check_parse_parts(flavour, ["//a", "b"], ("", sep, [sep, "a", "b"]))
-    check_parse_parts(flavour, ["///a", "b"], ("", sep, [sep, "a", "b"]))
-    check_parse_parts(flavour, ["////a", "b"], ("", sep, [sep, "a", "b"]))
-    check_parse_parts(flavour, ["\\a"], ("", "", ["\\a"]))
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
+@pytest.mark.parametrize(
+    ["partsstr", "expect"],
+    [
+        ([], ("", "", [])),
+        (["a"], ("", "", ["a"])),
+        (["a/"], ("", "", ["a"])),
+        (["a", "b"], ("", "", ["a", "b"])),
+        (["a/b"], ("", "", ["a", "b"])),
+        (["a/b/"], ("", "", ["a", "b"])),
+        (["a", "b/c", "d"], ("", "", ["a", "b", "c", "d"])),
+        (["a", "b//c", "d"], ("", "", ["a", "b", "c", "d"])),
+        (["a", "b/c/", "d"], ("", "", ["a", "b", "c", "d"])),
+        (["."], ("", "", [])),
+        ([".", ".", "b"], ("", "", ["b"])),
+        (["a", ".", "b"], ("", "", ["a", "b"])),
+        (["a", ".", "."], ("", "", ["a"])),
+        (["/a/b"], ("", "/", ["/", "a", "b"])),
+        (["/a", "b"], ("", "/", ["/", "a", "b"])),
+        (["/a/", "b"], ("", "/", ["/", "a", "b"])),
+        (["a", "/b", "c"], ("", "/", ["/", "b", "c"])),
+        (["a", "/b", "/c"], ("", "/", ["/", "c"])),
+        (["//a", "b"], ("", "/", ["/", "a", "b"])),
+        (["///a", "b"], ("", "/", ["/", "a", "b"])),
+        (["////a", "b"], ("", "/", ["/", "a", "b"])),
+        (["\\a"], ("", "", ["\\a"])),
+    ],
+)
+def test_flavour_check_parse_parts(check_parse_parts, pure_path_cls, partsstr, expect):
+    check_parse_parts(pure_path_cls._flavour, partsstr, expect)
 
 
-@pytest.mark.parametrize(["pure_path_cls"], [(PureHttpPath,)])
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
+@pytest.mark.parametrize(
+    ["pathstr", "expect"],
+    [
+        ("", ("", "", "")),
+        ("a", ("", "", "a")),
+        ("a/b", ("", "", "a/b")),
+        ("a/b/", ("", "", "a/b/")),
+        ("/a", ("", "/", "a")),
+        ("/a/b", ("", "/", "a/b")),
+        ("/a/b/", ("", "/", "a/b/")),
+        ("//a", ("", "/", "a")),
+        ("///a", ("", "/", "a")),
+        ("///a/b", ("", "/", "a/b")),
+        ("\\/a/b", ("", "", "\\/a/b")),
+        ("\\a\\b", ("", "", "\\a\\b")),
+    ],
+)
+def test_flavour_splitroot(pure_path_cls, pathstr, expect):
+    assert pure_path_cls._flavour.splitroot(pathstr) == expect
+
+
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
 def test_purepath_constructor(pure_path_cls):
     P = pure_path_cls
     p = P("a")
@@ -80,50 +99,59 @@ def test_purepath_constructor(pure_path_cls):
     assert P(P("a"), P("b"), P("c")) == P(FakePath("a/b/c"))
 
 
-@pytest.mark.parametrize(["pure_path_cls"], [(PureHttpPath,)])
-def test_check_str_subclass(check_str_subclass, pure_path_cls):
-    check_str_subclass(pure_path_cls, "")
-    check_str_subclass(pure_path_cls, ".")
-    check_str_subclass(pure_path_cls, "a")
-    check_str_subclass(pure_path_cls, "a/b.txt")
-    check_str_subclass(pure_path_cls, "/a/b.txt")
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
+@pytest.mark.parametrize(
+    ["pathstr"], [("",), (".",), ("a",), ("a/b.txt",), ("/a/b.txt",)]
+)
+def test_check_str_subclass(check_str_subclass, pure_path_cls, pathstr):
+    check_str_subclass(pure_path_cls, pathstr)
 
 
-@pytest.mark.parametrize(["pure_path_cls"], [(PureHttpPath,)])
-def test_join(pure_path_cls):
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
+@pytest.mark.parametrize(
+    ["pathstr", "f", "expect"],
+    [
+        ("a/b", lambda _: _.joinpath("c"), "a/b/c"),
+        ("a/b", lambda _: _.joinpath("c", "d"), "a/b/c/d"),
+        ("a/b", lambda _: _.joinpath("c"), "a/b/c"),
+        ("a/b", lambda _: _.joinpath("/c"), "/c"),
+        ("//a", lambda _: _.joinpath("b"), "//a/b"),
+        ("/a", lambda _: _.joinpath("//c"), "//c"),
+        ("//a", lambda _: _.joinpath("/c"), "/c"),
+    ],
+)
+def test_join(pure_path_cls, pathstr, f, expect):
     P = pure_path_cls
-    p = P("a/b")
-    pp = p.joinpath("c")
-    assert pp == P("a/b/c")
+    p = P(pathstr)
+    pp = f(p)
+    assert pp == P(expect)
     assert type(pp) is type(p)
-    pp = p.joinpath("c", "d")
-    assert pp == P("a/b/c/d")
-    pp = p.joinpath(P("c"))
-    assert pp == P("a/b/c")
-    pp = p.joinpath("/c")
-    assert pp == P("/c")
 
 
-@pytest.mark.parametrize(["pure_path_cls"], [(PureHttpPath,)])
-def test_div(pure_path_cls):
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
+@pytest.mark.parametrize(
+    ["pathstr", "f", "expect"],
+    [
+        ("a/b", lambda _: _ / "c", "a/b/c"),
+        ("a/b", lambda _: _ / "c/d", "a/b/c/d"),
+        ("a/b", lambda _: _ / "c" / "d", "a/b/c/d"),
+        ("a/b", lambda _: "c" / _ / "d", "c/a/b/d"),
+        ("a/b", lambda _: _ / "/c", "/c"),
+        ("a/b", lambda _: _ / type(_)("c"), "a/b/c"),
+        ("//a", lambda _: _ / "b", "//a/b"),
+        ("/a", lambda _: _ / "//c", "//c"),
+        ("//a", lambda _: _ / "/c", "/c"),
+    ],
+)
+def test_div(pure_path_cls, pathstr, f, expect):
     P = pure_path_cls
-    p = P("a/b")
-    pp = p / "c"
-    assert pp == P("a/b/c")
+    p = P(pathstr)
+    pp = f(p)
+    assert pp == P(expect)
     assert type(pp) == type(p)
-    pp = p / "c/d"
-    assert pp == P("a/b/c/d")
-    pp = p / "c" / "d"
-    assert pp == P("a/b/c/d")
-    pp = "c" / p / "d"
-    assert pp == P("c/a/b/d")
-    pp = p / P("c")
-    assert pp == P("a/b/c")
-    pp = p / "/c"
-    assert pp == P("/c")
 
 
-@pytest.mark.parametrize(["pure_path_cls"], [(PureHttpPath,)])
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
 @pytest.mark.parametrize(
     ["pathstr"], [("a",), ("a/b",), ("a/b/c",), ("/",), ("/a/b",), ("/a/b/c",)]
 )
@@ -132,7 +160,7 @@ def test_str(check_str, pure_path_cls, pathstr):
     check_str(pure_path_cls, ".", ("",))
 
 
-@pytest.mark.parametrize(["pure_path_cls"], [(PureHttpPath,)])
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
 @pytest.mark.parametrize(
     ["pathstr"], [("a",), ("a/b",), ("a/b/c",), ("/",), ("/a/b",), ("/a/b/c",)]
 )
@@ -141,14 +169,14 @@ def test_as_posix(pure_path_cls, pathstr):
     assert P(pathstr).as_posix() == pathstr
 
 
-@pytest.mark.parametrize(["pure_path_cls"], [(PureHttpPath,)])
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
 def test_as_bytes(pure_path_cls):
     sep = os.fsencode(pure_path_cls._flavour.sep)
     P = pure_path_cls
     assert bytes(P("a/b")) == b"a" + sep + b"b"
 
 
-@pytest.mark.parametrize(["pure_path_cls"], [(PureHttpPath,)])
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
 @pytest.mark.parametrize(["pathstr"], [("a",), ("",)])
 @pytest.mark.xfail(raises=ValueError)
 def test_as_uri_failed(pure_path_cls, pathstr):
@@ -156,7 +184,7 @@ def test_as_uri_failed(pure_path_cls, pathstr):
     P(pathstr).as_uri()
 
 
-@pytest.mark.parametrize(["pure_path_cls"], [(PureHttpPath,)])
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
 @pytest.mark.parametrize(
     ["pathstr"], [("a",), ("a/b",), ("a/b/c",), ("/",), ("/a/b",), ("/a/b/c",)]
 )
@@ -176,7 +204,7 @@ def test_repr(pure_path_cls, pathstr):
     assert repr(q) == r
 
 
-@pytest.mark.parametrize(["pure_path_cls"], [(PureHttpPath,)])
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
 def test_eq(pure_path_cls):
     P = pure_path_cls
     assert P("a/b") == P("a/b")
@@ -191,7 +219,7 @@ def test_eq(pure_path_cls):
     assert P() != int
 
 
-@pytest.mark.parametrize(["pure_path_cls"], [(PureHttpPath,)])
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
 @pytest.mark.parametrize(
     ["pathstr"],
     [
@@ -205,86 +233,72 @@ def test_match_fail(pure_path_cls, pathstr):
     P("a").match(pathstr)
 
 
-@pytest.mark.parametrize(["pure_path_cls"], [(PureHttpPath,)])
-def test_match(pure_path_cls):
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
+@pytest.mark.parametrize(
+    ["pathstr", "part", "expect"],
+    [
+        ("b.py", "b.py", True),
+        ("a/b.py", "b.py", True),
+        ("/a/b.py", "b.py", True),
+        ("b.py", "*.py", True),
+        ("a/b.py", "*.py", True),
+        ("/a/b.py", "*.py", True),
+        ("ab/c.py", "a*/*.py", True),
+        ("/d/ab/c.py", "a*/*.py", True),
+        ("/b.py", "/*.py", True),
+        ("/a/b.py", "/a/*.py", True),
+        ("/a/b/c.py", "/a/**/*.py", True),
+        ("a.py", "b.py", False),
+        ("b/py", "b.py", False),
+        ("/a.py", "b.py", False),
+        ("b.py/c", "b.py", False),
+        ("b.pyc", "*.py", False),
+        ("b./py", "*.py", False),
+        ("b.py/c", "*.py", False),
+        ("a.py", "a*/*.py", False),
+        ("/dab/c.py", "a*/*.py", False),
+        ("ab/c.py/d", "a*/*.py", False),
+        ("b.py", "/*.py", False),
+        ("a/b.py", "/*.py", False),
+        ("/a/b.py", "/*.py", False),
+        ("/ab.py", "/a/*.py", False),
+        ("/a/b/c.py", "/a/*.py", False),
+        ("/a/b/c.py", "/**/*.py", False),
+        ("A.py", "a.PY", False),
+    ],
+)
+def test_match(pure_path_cls, pathstr, part, expect):
     P = pure_path_cls
-    # Simple relative pattern.
-    assert P("b.py").match("b.py")
-    assert P("a/b.py").match("b.py")
-    assert P("/a/b.py").match("b.py")
-    assert not (P("a.py").match("b.py"))
-    assert not (P("b/py").match("b.py"))
-    assert not (P("/a.py").match("b.py"))
-    assert not (P("b.py/c").match("b.py"))
-    # Wilcard relative pattern.
-    assert P("b.py").match("*.py")
-    assert P("a/b.py").match("*.py")
-    assert P("/a/b.py").match("*.py")
-    assert not (P("b.pyc").match("*.py"))
-    assert not (P("b./py").match("*.py"))
-    assert not (P("b.py/c").match("*.py"))
-    # Multi-part relative pattern.
-    assert P("ab/c.py").match("a*/*.py")
-    assert P("/d/ab/c.py").match("a*/*.py")
-    assert not (P("a.py").match("a*/*.py"))
-    assert not (P("/dab/c.py").match("a*/*.py"))
-    assert not (P("ab/c.py/d").match("a*/*.py"))
-    # Absolute pattern.
-    assert P("/b.py").match("/*.py")
-    assert not (P("b.py").match("/*.py"))
-    assert not (P("a/b.py").match("/*.py"))
-    assert not (P("/a/b.py").match("/*.py"))
-    # Multi-part absolute pattern.
-    assert P("/a/b.py").match("/a/*.py")
-    assert not (P("/ab.py").match("/a/*.py"))
-    assert not (P("/a/b/c.py").match("/a/*.py"))
-    # Multi-part glob-style pattern.
-    assert not (P("/a/b/c.py").match("/**/*.py"))
-    assert P("/a/b/c.py").match("/a/**/*.py")
+    assert P(pathstr).match(part) == expect
 
 
-@pytest.mark.parametrize(["pure_path_cls"], [(PureHttpPath,)])
-def test_ordering(pure_path_cls):
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
+@pytest.mark.parametrize(
+    ["a", "b", "c", "d"], [("a", "a/b", "abc", "b"), ("/a", "/a/b", "/abc", "/b")]
+)
+def test_ordering(pure_path_cls, a, b, c, d):
     P = pure_path_cls
-    a = P("a")
-    b = P("a/b")
-    c = P("abc")
-    d = P("b")
-    assert a < b
-    assert a < c
-    assert a < d
-    assert b < c
-    assert c < d
-    a = P("/a")
-    b = P("/a/b")
-    c = P("/abc")
-    d = P("/b")
-    assert a < b
-    assert a < c
-    assert a < d
-    assert b < c
-    assert c < d
-    with pytest.raises(TypeError):
-        P() < {}
+    assert P(a) < P(b) < P(c) < P(d)
 
 
-@pytest.mark.parametrize(["pure_path_cls"], [(PureHttpPath,)])
-def test_parts(pure_path_cls):
-    # `parts` returns a tuple.
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
+@pytest.mark.xfail(raises=TypeError)
+def test_ordering_fail(pure_path_cls):
+    pure_path_cls() < {}
+
+
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
+@pytest.mark.parametrize(
+    ["pathstr", "expect"], [("a/b", ("a", "b")), ("/a/b", ("/", "a", "b"))]
+)
+def test_parts(pure_path_cls, pathstr, expect):
     P = pure_path_cls
-    sep = P._flavour.sep
-    p = P("a/b")
-    parts = p.parts
-    assert parts == ("a", "b")
-    # The object gets reused.
-    assert parts is p.parts
-    # When the path is absolute, the anchor is a separate part.
-    p = P("/a/b")
-    parts = p.parts
-    assert parts == (sep, "a", "b")
+    p = P(pathstr)
+    assert p.parts == expect
+    assert p.parts is p.parts
 
 
-@pytest.mark.parametrize(["pure_path_cls"], [(PureHttpPath,)])
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
 def test_fspath(check_str, pure_path_cls):
     P = pure_path_cls
     p = P("a/b")
@@ -292,7 +306,7 @@ def test_fspath(check_str, pure_path_cls):
     check_str(P, os.fspath(p), ("a/b",))
 
 
-@pytest.mark.parametrize(["pure_path_cls"], [(PureHttpPath,)])
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
 @pytest.mark.parametrize(
     ["pathstr", "equivalences"],
     [
@@ -335,20 +349,17 @@ def test_equivalences(pure_path_cls, pathstr, equivalences):
 
 
 @pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
-def test_parent(pure_path_cls):
-    # Relative
+@pytest.mark.parametrize(
+    ["pathstr", "p0", "p1", "p2", "p3"],
+    [("a/b/c", "a/b", "a", "", ""), ("/a/b/c", "/a/b", "/a", "/", "/")],
+)
+def test_parent(pure_path_cls, pathstr, p0, p1, p2, p3):
     P = pure_path_cls
-    p = P("a/b/c")
-    assert p.parent == P("a/b")
-    assert p.parent.parent == P("a")
-    assert p.parent.parent.parent == P()
-    assert p.parent.parent.parent.parent == P()
-    # Anchored
-    p = P("/a/b/c")
-    assert p.parent == P("/a/b")
-    assert p.parent.parent == P("/a")
-    assert p.parent.parent.parent == P("/")
-    assert p.parent.parent.parent.parent == P("/")
+    p = P(pathstr)
+    assert p.parent == P(p0)
+    assert p.parent.parent == P(p1)
+    assert p.parent.parent.parent == P(p2)
+    assert p.parent.parent.parent.parent == P(p3)
 
 
 @pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
@@ -396,113 +407,139 @@ def test_parents(pure_path_cls):
 
 
 @pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
-def test_drive(pure_path_cls):
+@pytest.mark.parametrize(["pathstr"], [("a/b",), ("/a/b",), ("",)])
+def test_drive(pure_path_cls, pathstr):
     P = pure_path_cls
-    assert P("a/b").drive == ""
-    assert P("/a/b").drive == ""
-    assert P("").drive == ""
+    assert P(pathstr).drive == ""
 
 
 @pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
-def test_root(pure_path_cls):
-    P = pure_path_cls
-    sep = pure_path_cls._flavour.sep
-    assert P("").root == ""
-    assert P("a/b").root == ""
-    assert P("/").root == sep
-    assert P("/a/b").root == sep
+@pytest.mark.parametrize(
+    ["pathstr", "expect"],
+    [("", ""), ("a/b", ""), ("/", "/"), ("/a/b", "/"), ("///a/b", "/"), ("//a/b", "/")],
+)
+def test_root(pure_path_cls, pathstr, expect):
+    assert pure_path_cls(pathstr).root == expect
 
 
 @pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
-def test_anchor(pure_path_cls):
+@pytest.mark.parametrize(
+    ["pathstr", "expect"],
+    [("", ""), ("a/b", ""), ("/", "/"), ("/a/b", "/")],
+)
+def test_anchor(pure_path_cls, pathstr, expect):
     P = pure_path_cls
-    sep = pure_path_cls._flavour.sep
-    assert P("").anchor == ""
-    assert P("a/b").anchor == ""
-    assert P("/").anchor == sep
-    assert P("/a/b").anchor == sep
+    assert P(pathstr).anchor == expect
 
 
 @pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
-def test_name(pure_path_cls):
+@pytest.mark.parametrize(
+    ["pathstr", "expect"],
+    [
+        ("", ""),
+        (".", ""),
+        ("/", ""),
+        ("a/b", "b"),
+        ("/a/b", "b"),
+        ("/a/b/.", "b"),
+        ("a/b.py", "b.py"),
+        ("/a/b.py", "b.py"),
+    ],
+)
+def test_name(pure_path_cls, pathstr, expect):
     P = pure_path_cls
-    assert P("").name == ""
-    assert P(".").name == ""
-    assert P("/").name == ""
-    assert P("a/b").name == "b"
-    assert P("/a/b").name == "b"
-    assert P("/a/b/.").name == "b"
-    assert P("a/b.py").name == "b.py"
-    assert P("/a/b.py").name == "b.py"
+    assert P(pathstr).name == expect
 
 
 @pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
-def test_suffix(pure_path_cls):
+@pytest.mark.parametrize(
+    ["pathstr", "expect"],
+    [
+        ("", ""),
+        ("/", ""),
+        ("a/b", ""),
+        ("/a/b", ""),
+        ("/a/b/.", ""),
+        ("a/b.py", ".py"),
+        ("/a/b.py", ".py"),
+        ("a/.hgrc", ""),
+        ("/a/.hgrc", ""),
+        ("a/.hg.rc", ".rc"),
+        ("/a/.hg.rc", ".rc"),
+        ("a/b.tar.gz", ".gz"),
+        ("/a/b.tar.gz", ".gz"),
+        ("a/Some name. Ending with a dot.", ""),
+        ("/a/Some name. Ending with a dot.", ""),
+    ],
+)
+def test_suffix(pure_path_cls, pathstr, expect):
     P = pure_path_cls
-    assert P("").suffix == ""
-    assert P(".").suffix == ""
-    assert P("..").suffix == ""
-    assert P("/").suffix == ""
-    assert P("a/b").suffix == ""
-    assert P("/a/b").suffix == ""
-    assert P("/a/b/.").suffix == ""
-    assert P("a/b.py").suffix == ".py"
-    assert P("/a/b.py").suffix == ".py"
-    assert P("a/.hgrc").suffix == ""
-    assert P("/a/.hgrc").suffix == ""
-    assert P("a/.hg.rc").suffix == ".rc"
-    assert P("/a/.hg.rc").suffix == ".rc"
-    assert P("a/b.tar.gz").suffix == ".gz"
-    assert P("/a/b.tar.gz").suffix == ".gz"
-    assert P("a/Some name. Ending with a dot.").suffix == ""
-    assert P("/a/Some name. Ending with a dot.").suffix == ""
+    assert P(pathstr).suffix == expect
 
 
 @pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
-def test_suffixes(pure_path_cls):
+@pytest.mark.parametrize(
+    ["pathstr", "expect"],
+    [
+        ("", []),
+        (".", []),
+        ("/", []),
+        ("a/b", []),
+        ("/a/b", []),
+        ("/a/b/.", []),
+        ("a/b.py", [".py"]),
+        ("/a/b.py", [".py"]),
+        ("a/.hgrc", []),
+        ("/a/.hgrc", []),
+        ("a/.hg.rc", [".rc"]),
+        ("/a/.hg.rc", [".rc"]),
+        ("a/b.tar.gz", [".tar", ".gz"]),
+        ("/a/b.tar.gz", [".tar", ".gz"]),
+        ("a/Some name. Ending with a dot.", []),
+        ("/a/Some name. Ending with a dot.", []),
+    ],
+)
+def test_suffixes(pure_path_cls, pathstr, expect):
     P = pure_path_cls
-    assert P("").suffixes == []
-    assert P(".").suffixes == []
-    assert P("/").suffixes == []
-    assert P("a/b").suffixes == []
-    assert P("/a/b").suffixes == []
-    assert P("/a/b/.").suffixes == []
-    assert P("a/b.py").suffixes == [".py"]
-    assert P("/a/b.py").suffixes == [".py"]
-    assert P("a/.hgrc").suffixes == []
-    assert P("/a/.hgrc").suffixes == []
-    assert P("a/.hg.rc").suffixes == [".rc"]
-    assert P("/a/.hg.rc").suffixes == [".rc"]
-    assert P("a/b.tar.gz").suffixes == [".tar", ".gz"]
-    assert P("/a/b.tar.gz").suffixes == [".tar", ".gz"]
-    assert P("a/Some name. Ending with a dot.").suffixes == []
-    assert P("/a/Some name. Ending with a dot.").suffixes == []
+    assert P(pathstr).suffixes == expect
 
 
 @pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
-def test_stem(pure_path_cls):
+@pytest.mark.parametrize(
+    ["pathstr", "expect"],
+    [
+        ("", ""),
+        (".", ""),
+        ("..", ".."),
+        ("/", ""),
+        ("a/b", "b"),
+        ("a/b.py", "b"),
+        ("a/.hgrc", ".hgrc"),
+        ("a/.hg.rc", ".hg"),
+        ("a/b.tar.gz", "b.tar"),
+        ("a/Some name. Ending with a dot.", "Some name. Ending with a dot."),
+    ],
+)
+def test_stem(pure_path_cls, pathstr, expect):
     P = pure_path_cls
-    assert P("").stem == ""
-    assert P(".").stem == ""
-    assert P("..").stem == ".."
-    assert P("/").stem == ""
-    assert P("a/b").stem == "b"
-    assert P("a/b.py").stem == "b"
-    assert P("a/.hgrc").stem == ".hgrc"
-    assert P("a/.hg.rc").stem == ".hg"
-    assert P("a/b.tar.gz").stem == "b.tar"
-    assert P("a/Some name. Ending with a dot.").stem == "Some name. Ending with a dot."
+    assert P(pathstr).stem == expect
 
 
 @pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
-def test_with_name(pure_path_cls):
+@pytest.mark.parametrize(
+    ["pathstr", "namestr", "expect"],
+    [
+        ("a/b", "d.xml", "a/d.xml"),
+        ("/a/b", "d.xml", "/a/d.xml"),
+        ("a/b.py", "d.xml", "a/d.xml"),
+        ("/a/b.py", "d.xml", "/a/d.xml"),
+        ("a/Dot ending.", "d.xml", "a/d.xml"),
+        ("/a/Dot ending.", "d.xml", "/a/d.xml"),
+    ],
+)
+def test_with_name(pure_path_cls, pathstr, namestr, expect):
     P = pure_path_cls
-    assert P("a/b").with_name("d.xml") == P("a/d.xml")
-    assert P("/a/b").with_name("d.xml") == P("/a/d.xml")
-    assert P("a/b.py").with_name("d.xml") == P("a/d.xml")
-    assert P("/a/b.py").with_name("d.xml") == P("/a/d.xml")
-    assert P("a/Dot ending.").with_name("d.xml") == P("a/d.xml")
-    assert P("/a/Dot ending.").with_name("d.xml") == P("/a/d.xml")
+    assert P(pathstr).with_name(namestr) == P(expect)
 
 
 @pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
@@ -524,15 +561,20 @@ def test_with_name_fail(pure_path_cls, pathstr, name):
 
 
 @pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
-def test_with_stem(pure_path_cls):
+@pytest.mark.parametrize(
+    ["pathstr", "stemstr", "expect"],
+    [
+        ("a/b", "d", "a/d"),
+        ("/a/b", "d", "/a/d"),
+        ("a/b.py", "d", "a/d.py"),
+        ("/a/b.tar.gz", "d", "/a/d.gz"),
+        ("a/Dot ending.", "d", "a/d"),
+        ("/a/Dot ending.", "d", "/a/d"),
+    ],
+)
+def test_with_stem(pure_path_cls, pathstr, stemstr, expect):
     P = pure_path_cls
-    assert P("a/b").with_stem("d") == P("a/d")
-    assert P("/a/b").with_stem("d") == P("/a/d")
-    assert P("a/b.py").with_stem("d") == P("a/d.py")
-    assert P("/a/b.py").with_stem("d") == P("/a/d.py")
-    assert P("/a/b.tar.gz").with_stem("d") == P("/a/d.gz")
-    assert P("a/Dot ending.").with_stem("d") == P("a/d")
-    assert P("/a/Dot ending.").with_stem("d") == P("/a/d")
+    assert P(pathstr).with_stem(stemstr) == P(expect)
 
 
 @pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
@@ -554,14 +596,20 @@ def test_with_stem_fail(pure_path_cls, pathstr, stem):
 
 
 @pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
-def test_with_suffix(pure_path_cls):
+@pytest.mark.parametrize(
+    ["pathstr", "suffixstr", "expect"],
+    [
+        ("a/b", ".gz", "a/b.gz"),
+        ("/a/b", ".gz", "/a/b.gz"),
+        ("a/b.py", ".gz", "a/b.gz"),
+        ("/a/b.py", ".gz", "/a/b.gz"),
+        ("a/b.py", "", "a/b"),
+        ("/a/b", "", "/a/b"),
+    ],
+)
+def test_with_suffix(pure_path_cls, pathstr, suffixstr, expect):
     P = pure_path_cls
-    assert P("a/b").with_suffix(".gz") == P("a/b.gz")
-    assert P("/a/b").with_suffix(".gz") == P("/a/b.gz")
-    assert P("a/b.py").with_suffix(".gz") == P("a/b.gz")
-    assert P("/a/b.py").with_suffix(".gz") == P("/a/b.gz")
-    assert P("a/b.py").with_suffix("") == P("a/b")
-    assert P("/a/b").with_suffix("") == P("/a/b")
+    assert P(pathstr).with_suffix(suffixstr) == P(expect)
 
 
 @pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
@@ -586,19 +634,98 @@ def test_with_suffix(pure_path_cls):
 def test_with_suffix_fail(pure_path_cls, pathstr, suffix):
     pure_path_cls(pathstr).with_suffix(suffix)
 
+
 @pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_relative_to_fail(pure_path_cls):
-    pure_path_cls().relative_to(pure_path_cls("a"))
+def test_relative_to(pure_path_cls):
+    P = pure_path_cls
+    p = P("a/b")
+    assert p.relative_to(P()) == P("a/b")
+    assert p.relative_to("") == P("a/b")
+    assert p.relative_to(P("a")) == P("b")
+    assert p.relative_to("a") == P("b")
+    assert p.relative_to("a/") == P("b")
+    assert p.relative_to(P("a/b")) == P()
+    assert p.relative_to("a/b") == P()
+    with pytest.raises(TypeError):
+        p.relative_to()
+    with pytest.raises(TypeError):
+        p.relative_to(b"a")
+    # With several args.
+    assert p.relative_to("a", "b") == P()
+    # Unrelated paths.
+    with pytest.raises(ValueError):
+        p.relative_to(P("c"))
+    with pytest.raises(ValueError):
+        p.relative_to(P("a/b/c"))
+    with pytest.raises(ValueError):
+        p.relative_to(P("a/c"))
+    with pytest.raises(ValueError):
+        p.relative_to(P("/a"))
+    p = P("/a/b")
+    assert p.relative_to(P("/")) == P("a/b")
+    assert p.relative_to("/") == P("a/b")
+    assert p.relative_to(P("/a")) == P("b")
+    assert p.relative_to("/a") == P("b")
+    assert p.relative_to("/a/") == P("b")
+    assert p.relative_to(P("/a/b")) == P()
+    assert p.relative_to("/a/b") == P()
+    # Unrelated paths.
+    with pytest.raises(ValueError):
+        p.relative_to(P("/c"))
+    with pytest.raises(ValueError):
+        p.relative_to(P("/a/b/c"))
+    with pytest.raises(ValueError):
+        p.relative_to(P("/a/c"))
+    with pytest.raises(ValueError):
+        p.relative_to(P())
+    with pytest.raises(ValueError):
+        p.relative_to("")
+    with pytest.raises(ValueError):
+        p.relative_to(P("a"))
+
 
 @pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
 def test_is_relative_to(pure_path_cls):
-    assert not pure_path_cls().is_relative_to(pure_path_cls("a"))
+    P = pure_path_cls
+    p = P("a/b")
+    with pytest.raises(TypeError):
+        p.is_relative_to()
+    with pytest.raises(TypeError):
+        p.is_relative_to(b"a")
+    assert p.is_relative_to(P())
+    assert p.is_relative_to("")
+    assert p.is_relative_to(P("a"))
+    assert p.is_relative_to("a/")
+    assert p.is_relative_to(P("a/b"))
+    assert p.is_relative_to("a/b")
+    # With several args.
+    assert p.is_relative_to("a", "b")
+    # Unrelated paths.
+    assert not (p.is_relative_to(P("c")))
+    assert not (p.is_relative_to(P("a/b/c")))
+    assert not (p.is_relative_to(P("a/c")))
+    assert not (p.is_relative_to(P("/a")))
+    p = P("/a/b")
+    assert p.is_relative_to(P("/"))
+    assert p.is_relative_to("/")
+    assert p.is_relative_to(P("/a"))
+    assert p.is_relative_to("/a")
+    assert p.is_relative_to("/a/")
+    assert p.is_relative_to(P("/a/b"))
+    assert p.is_relative_to("/a/b")
+    # Unrelated paths.
+    assert not (p.is_relative_to(P("/c")))
+    assert not (p.is_relative_to(P("/a/b/c")))
+    assert not (p.is_relative_to(P("/a/c")))
+    assert not (p.is_relative_to(P()))
+    assert not (p.is_relative_to(""))
+    assert not (p.is_relative_to(P("a")))
+
 
 @pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
-def test_pickling_common(pure_path_cls):
+def test_pickling(pure_path_cls):
     P = pure_path_cls
-    p = P('/a/b')
+    p = P("/a/b")
     for proto in range(0, pickle.HIGHEST_PROTOCOL + 1):
         dumped = pickle.dumps(p, proto)
         pp = pickle.loads(dumped)
@@ -606,3 +733,45 @@ def test_pickling_common(pure_path_cls):
         assert pp == p
         assert hash(pp) == hash(p)
         assert str(pp) == str(p)
+
+
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
+@pytest.mark.parametrize(
+    ["left_hand", "right_hand", "expect"],
+    [("/a/b/b", "A/b", False), ("/a", "///a", True), ("/a", "//a", True)],
+)
+def test_eq(pure_path_cls, left_hand, right_hand, expect):
+    assert (pure_path_cls(left_hand) == pure_path_cls(right_hand)) == expect
+
+
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
+@pytest.mark.parametrize(
+    ["pathstr", "expect"],
+    [
+        ("/", False),
+        ("/a", False),
+        ("/a/b/", False),
+        ("//a", False),
+        ("//a/b", False),
+        ("", False),
+        ("a", False),
+        ("a/b/", False),
+    ],
+)
+def test_is_absolute(pure_path_cls, pathstr, expect):
+    P = pure_path_cls
+    assert P(pathstr).is_absolute() == expect
+
+
+@pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)
+@pytest.mark.parametrize(
+    ["pathstr", "expect"],
+    [
+        ("", False),
+        ("/", False),
+        ("/foo/bar", False),
+        ("/dev/con/PRN/NUL", False),
+    ],
+)
+def test_is_reserved(pure_path_cls, pathstr, expect):
+    assert pure_path_cls(pathstr).is_reserved() == expect

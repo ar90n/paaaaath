@@ -37,4 +37,5 @@ def check_str():
     def _f(cls, expected, args):
         p = cls(*args)
         assert str(p) == expected.replace("/", cls._flavour.sep)
+
     return _f
