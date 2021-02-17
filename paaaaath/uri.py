@@ -1,5 +1,5 @@
-import pathlib
 import fnmatch
+import pathlib
 import posixpath
 import re
 from os import fsencode

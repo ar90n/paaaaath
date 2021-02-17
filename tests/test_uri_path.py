@@ -1,6 +1,6 @@
 import pytest
 
-from paaaaath.uri import _uri_flavour, PureUriPath
+from paaaaath.uri import PureUriPath, _uri_flavour
 
 
 @pytest.mark.parametrize(
