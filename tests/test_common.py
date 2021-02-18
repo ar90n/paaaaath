@@ -4,10 +4,9 @@ import pickle
 import pytest
 
 import paaaaath
-from paaaaath.http import PureHttpPath
-from paaaaath.uri import PureUriPath
+from paaaaath import Path, PureHttpPath, PureS3Path, PureUriPath
 
-pure_path_classes = [(PureUriPath,), (PureHttpPath,)]
+pure_path_classes = [(PureUriPath,), (PureHttpPath,), (PureS3Path,)]
 
 
 class FakePath:
@@ -28,6 +27,20 @@ class FakePath:
             raise self.path
         else:
             return self.path
+
+
+@pytest.mark.parametrize(
+    ["uri", "cls"],
+    [
+        ("http://example.com", PureHttpPath),
+        ("https://example.com", PureHttpPath),
+        ("http://example.com:80/index.html", PureHttpPath),
+        ("s3://example.com", PureS3Path),
+    ],
+)
+def test_create_path(uri, cls):
+    path = Path(uri)
+    assert isinstance(path, cls)
 
 
 @pytest.mark.parametrize(["pure_path_cls"], pure_path_classes)

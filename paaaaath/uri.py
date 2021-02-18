@@ -5,6 +5,8 @@ import re
 from os import fsencode
 from urllib.parse import quote_from_bytes, urlparse
 
+from .common import PurePath
+
 
 class _UriFlavour(pathlib._Flavour):
     sep = "/"
@@ -56,6 +58,6 @@ class _UriFlavour(pathlib._Flavour):
 _uri_flavour = _UriFlavour()
 
 
-class PureUriPath(pathlib.PurePath):
+class PureUriPath(PurePath):
     _flavour = _uri_flavour
     __slots__ = ()

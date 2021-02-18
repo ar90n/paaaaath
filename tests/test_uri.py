@@ -57,6 +57,14 @@ def test_http_flavour_splitroot(pathstr, expect):
             ("foo", "bar", "piyo", "..", "fuz"),
             "http://user@example.com:80/foo/bar/piyo/../fuz",
         ),
+        (
+            "HtTp://example.com",
+            "http://example.com",
+            "/",
+            "http://example.com/",
+            (),
+            "http://example.com/",
+        ),
     ],
 )
 def test_uri_parsing(uri, drive, root, anchor, rest_parts, as_uri):
@@ -69,6 +77,27 @@ def test_uri_parsing(uri, drive, root, anchor, rest_parts, as_uri):
     assert path.as_uri() == as_uri
     assert str(path) == path.as_uri()
     assert path.as_posix() == path.as_uri()
+
+
+@pytest.mark.parametrize(
+    ["uri", "drive", "root", "anchor", "rest_parts"],
+    [
+        (
+            "://example.com",
+            "",
+            "",
+            "",
+            ("example.com",),
+        ),
+    ],
+)
+def test_relative_path_parsing(uri, drive, root, anchor, rest_parts):
+    path = PureUriPath(uri)
+
+    assert path.drive == drive
+    assert path.root == root
+    assert path.anchor == anchor
+    assert path.parts[1:] == rest_parts
 
 
 @pytest.mark.parametrize(

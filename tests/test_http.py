@@ -37,16 +37,14 @@ def test_http_flavour_splitroot(pathstr, expect):
 
 
 @pytest.mark.parametrize(
-    ["uri", "cls"],
+    ["uri"],
     [
-        ("http://example.com", PureHttpPath),
-        ("https://example.com", PureHttpPath),
-        ("http://example.com:80/index.html", PureHttpPath),
+        ("s3://example.com",),
     ],
 )
-def test_create_path(uri, cls):
-    path = Path(uri)
-    assert isinstance(path, cls)
+@pytest.mark.xfail(raises=ValueError)
+def test_create_path_fail(uri):
+    HttpPath(uri)
 
 
 @pytest.mark.parametrize(

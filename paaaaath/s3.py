@@ -7,26 +7,26 @@ from .common import Path, PurePath
 from .uri import _UriFlavour
 
 
-class _HttpFlavour(_UriFlavour):
+class _S3Flavour(_UriFlavour):
     def splitroot(self, part, sep=None):
         sep = self.sep if sep is None else sep
         drv, root, part = super().splitroot(part, sep)
 
-        if not any((drv == "" or drv.startswith(p) for p in ["http", "https"])):
+        if not any((drv.startswith(p) for p in ["", "s3"])):
             raise ValueError(f"http and https are only supported. but {drv} was given.")
 
         return drv, root, part
 
 
-_http_flavour = _HttpFlavour()
+_s3_flavour = _S3Flavour()
 
 
-class PureHttpPath(PurePath):
-    _flavour = _http_flavour
+class PureS3Path(PurePath):
+    _flavour = _s3_flavour
     __slots__ = ()
 
 
-class _HttpAccessor(pathlib._Accessor):
+class _S3Accessor(pathlib._Accessor):
     utime = utime
 
     @staticmethod
@@ -98,27 +98,18 @@ class _HttpAccessor(pathlib._Accessor):
         raise NotImplementedError("Path.group() is unsupported on this system")
 
 
-_http_accessor = _HttpAccessor()
+_s3_accessor = _S3Accessor()
 
 
-class HttpPath(Path, PureHttpPath):
+class S3Path(Path, PureS3Path):
     __slots__ = ()
 
     def _init(self, template=None):
         super()._init(template)
-        self._accessor = _http_accessor
+        self._accessor = _s3_accessor
 
     def open(self, *args, **kwargs):
         return smart_open_lib.open(str(self), *args, **kwargs)
-
-    def exists(self):
-        from requests.exceptions import HTTPError
-
-        try:
-            self.open()
-        except HTTPError:
-            return False
-        return True
 
     def is_mount(self):
         raise NotImplementedError("Path.is_mount() is unsupported on this system")
