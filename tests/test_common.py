@@ -4,7 +4,9 @@ import pickle
 import pytest
 
 import paaaaath
-from paaaaath import Path, PureHttpPath, PureS3Path, PureUriPath
+from paaaaath import (HttpPath, Path, PosixPath, PureHttpPath, PurePath,
+                      PurePosixPath, PureS3Path, PureUriPath, PureWindowsPath,
+                      S3Path, WindowsPath)
 
 pure_path_classes = [(PureUriPath,), (PureHttpPath,), (PureS3Path,)]
 
@@ -36,6 +38,22 @@ class FakePath:
         ("https://example.com", PureHttpPath),
         ("http://example.com:80/index.html", PureHttpPath),
         ("s3://example.com", PureS3Path),
+        ("/example.com", PureWindowsPath if os.name == "nt" else PurePosixPath),
+    ],
+)
+def test_create_purepath(uri, cls):
+    path = PurePath(uri)
+    assert isinstance(path, cls)
+
+
+@pytest.mark.parametrize(
+    ["uri", "cls"],
+    [
+        ("http://example.com", HttpPath),
+        ("https://example.com", HttpPath),
+        ("http://example.com:80/index.html", HttpPath),
+        ("s3://example.com", S3Path),
+        ("/example.com", WindowsPath if os.name == "nt" else PosixPath),
     ],
 )
 def test_create_path(uri, cls):

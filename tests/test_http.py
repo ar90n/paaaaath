@@ -2,7 +2,7 @@ import io
 
 import pytest
 
-from paaaaath import HttpPath, Path, PureHttpPath
+from paaaaath import HttpPath, PureHttpPath
 from paaaaath.http import _http_flavour
 
 

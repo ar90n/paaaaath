@@ -1,4 +1,8 @@
+import boto3
 import pytest
+from moto import mock_s3
+
+import paaaaath
 
 
 @pytest.fixture
@@ -39,3 +43,34 @@ def check_str():
         assert str(p) == expected.replace("/", cls._flavour.sep)
 
     return _f
+
+
+@pytest.fixture
+def s3bucket():
+    class S3Bucket:
+        def __init__(self, name):
+            self.name = name
+            self._client = boto3.client("s3", region_name="us-east-1")
+            self._client.create_bucket(Bucket=name)
+
+        def put(self, key, content):
+            self._client.put_object(Bucket=self.name, Body=content, Key=key)
+
+        def get(self, key):
+            print(self.name, key)
+            return self._client.get_object(Bucket=self.name, Key=key)
+
+        def touch(self, key):
+            self._client.put_object(Bucket=self.name, Key=key)
+
+        def head(self, key):
+            return self._client.head_object(Bucket=self.name, Key=key)
+
+        @property
+        def root(self):
+            return f"s3://{self.name}/"
+
+    with mock_s3():
+        # To connect with moto, recreate S3 client
+        paaaaath.s3._S3Accessor._client = paaaaath.s3.S3Client()
+        yield S3Bucket("test")
