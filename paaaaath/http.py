@@ -27,7 +27,9 @@ class PureHttpPath(PurePath):
 
 
 class _HttpAccessor(pathlib._Accessor):
-    utime = utime
+    @staticmethod
+    def utime(*args, **kwargs):
+        raise NotImplementedError("utime() not available on this system")
 
     @staticmethod
     def open(*args, **kwargs):
