@@ -224,6 +224,7 @@ def test_mkdir(s3bucket, key, args):
     S3Path(f"{s3bucket.root}/{key}").mkdir(**args)
     assert s3bucket.get(f"{key.rstrip('/')}/")
 
+
 @pytest.mark.parametrize(
     ["pathstr", "expect"],
     [
@@ -240,11 +241,11 @@ def test_mkdir_fail(s3bucket, pathstr, expect):
 @pytest.mark.parametrize(
     ["key", "content", "expect"],
     [
-        ("key", "",  False),
-        ("key/", "",  True),
-        ("key/", "abc",  False),
-        ("key/file", "",  False),
-        ("key/dir/", "",  True),
+        ("key", "", False),
+        ("key/", "", True),
+        ("key/", "abc", False),
+        ("key/file", "", False),
+        ("key/dir/", "", True),
     ],
 )
 def test_is_dir(s3bucket, key, content, expect):

@@ -5,7 +5,7 @@ import re
 from os import fsencode
 from urllib.parse import quote_from_bytes, urlparse
 
-from .common import PurePath, Path
+from .common import Path, PurePath
 
 
 class _UriFlavour(pathlib._Flavour):
@@ -56,6 +56,7 @@ class _UriFlavour(pathlib._Flavour):
 
 
 _uri_flavour = _UriFlavour()
+
 
 class PureUriPath(PurePath):
     _flavour = _uri_flavour

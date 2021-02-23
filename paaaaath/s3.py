@@ -2,7 +2,7 @@ import boto3
 from botocore.exceptions import ClientError
 from smart_open import smart_open_lib
 
-from .common import _SkeletonPath, PurePath
+from .common import PurePath, _SkeletonPath
 from .uri import _UriFlavour
 
 
