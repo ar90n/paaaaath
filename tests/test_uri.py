@@ -1,6 +1,6 @@
 import pytest
 
-from paaaaath.uri import UriPath, PureUriPath, _uri_flavour
+from paaaaath.uri import PureUriPath, _uri_flavour
 
 
 @pytest.mark.parametrize(
@@ -230,53 +230,3 @@ def test_joinpath(uri, succ, expect):
 )
 def test_match(uri, part, expect):
     assert PureUriPath(uri).match(part) == expect
-
-
-@pytest.mark.parametrize(
-    ["api_name", "args"],
-    [
-        ("home", []),
-        ("samefile", [UriPath("http://other.com")]),
-        ("iterdir", []),
-        ("glob", ["*.py"]),
-        ("rglob", ["*.py"]),
-        ("absolute", []),
-        ("stat", []),
-        ("owner", []),
-        ("open", []),
-        ("readlink", []),
-        ("touch", []),
-        ("mkdir", []),
-        ("chmod", [0x666]),
-        ("lchmod", [0x666]),
-        ("unlink", []),
-        ("rmdir", []),
-        ("lstat", []),
-        ("link_to", [UriPath("file://tmp")]),
-        ("rename", [UriPath("file://tmp")]),
-        ("replace", [UriPath("file://tmp")]),
-        ("symlink_to", [UriPath("file://tmp")]),
-        ("exists", []),
-        ("is_dir", []),
-        ("is_file", []),
-        ("expanduser", []),
-    ],
-)
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_path_public_api_fail(api_name, args):
-    getattr(UriPath("http://example.com"), api_name)(*args)
-
-
-@pytest.mark.parametrize(
-    ["api_name"],
-    [
-        ("is_mount",),
-        ("is_symlink",),
-        ("is_block_device",),
-        ("is_char_device",),
-        ("is_fifo",),
-        ("is_socket",),
-    ],
-)
-def test_path_predicate(api_name):
-    assert getattr(UriPath("http://example.com"), api_name)() == False

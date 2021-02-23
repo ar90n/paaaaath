@@ -1,5 +1,6 @@
 import collections
 import io
+import time
 from os import rmdir
 
 import pytest
@@ -84,7 +85,7 @@ def test_gethome_fail():
 
 @pytest.mark.xfail(raises=NotImplementedError)
 def test_samefile_fail():
-    S3Path().samefile(S3Path())
+    S3Path("s3://example/a").samefile(S3Path("s3://example/a"))
 
 
 @pytest.mark.parametrize(
@@ -148,7 +149,7 @@ def test_read_write_bytes(s3bucket, expect):
     [
         (("a", "b", "c"), "/", {"a", "b", "c"}),
         (("a", "b/b", "b/c", "c/d"), "/b", {"b/b", "b/c"}),
-        (("a", "b/b", "b/c", "c/d/e"), "/c", {"c/d"}),
+        (("a", "b/b", "b/c", "c/d/e", "c/f/g"), "/c", {"c/d", "c/f"}),
         (("a/", "b/b", "b/c", "c/d"), "/a", {}),
         ([str(i) for i in range(1024)], "/", {str(i) for i in range(1024)}),
     ],
@@ -161,120 +162,67 @@ def test_iterdir(s3bucket, keys, root, expect):
     assert set(it) == {S3Path(f"{s3bucket.root}/{p}") for p in expect}
 
 
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_glob_fail():
-    S3Path().glob("")
+@pytest.mark.parametrize(
+    ["contents", "key", "expect"],
+    [
+        ({"a": "abc"}, "b", {"a": "abc", "b": ""}),
+    ],
+)
+def test_touch(s3bucket, contents, key, expect):
+    for k, v in contents.items():
+        s3bucket.put(k, v)
+    S3Path(f"{s3bucket.root}/{key}").touch()
 
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_rglob_fail():
-    S3Path().rglob("")
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_chmod_fail():
-    S3Path().chmod(0o777)
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_stat_fail():
-    S3Path().stat()
+    for k, v in expect.items():
+        assert s3bucket.get(k)["Body"].read().decode("utf-8") == v
 
 
 @pytest.mark.parametrize(
-    ["pathstr"],
+    ["contents"],
     [
-        ("a",),
-        ("a/b",),
+        ({"a": "abc"},),
     ],
 )
-def test_unlink(s3bucket, pathstr):
-    s3bucket.touch(pathstr)
-    path = S3Path(f"{s3bucket.root}/{pathstr}")
-    path.unlink()
-    assert not path.exists()
+def test_touch_exist_ok(s3bucket, contents):
+    originals = {}
+    for k, v in contents.items():
+        s3bucket.put(k, v)
+        originals[k] = s3bucket.get(k)
+
+    time.sleep(1)
+
+    for k, v in contents.items():
+        S3Path(f"{s3bucket.root}/{k}").touch(exist_ok=True)
+
+    for k, org in originals.items():
+        touched = s3bucket.get(k)
+        assert org["ETag"] == touched["ETag"]
+        assert org["LastModified"] < touched["LastModified"]
 
 
 @pytest.mark.parametrize(
-    ["touchkey", "pathstr", "expect"],
-    [
-        ("a/", "a/", PermissionError),
-        ("a", "b", FileNotFoundError),
-    ],
+    ["key", "args", "expect"],
+    [("a/b", {}, FileNotFoundError), ("exist", {"exist_ok": False}, FileExistsError)],
 )
-def test_unlink_fail(s3bucket, touchkey, pathstr, expect):
-    s3bucket.touch(touchkey)
-    path = S3Path(f"{s3bucket.root}/{pathstr}")
+def test_touch_fail(s3bucket, key, args, expect):
+    s3bucket.touch("exist")
     with pytest.raises(expect):
-        path.unlink()
+        S3Path(f"{s3bucket.root}/{key}").touch(**args)
 
 
 @pytest.mark.parametrize(
-    ["touch_keys", "rmdir_key", "exist_keys", "non_exist_keys"],
+    ["key", "args"],
     [
-        (["a/"], "a/", [], ["a/"]),
-        (["a/"], "a", [], ["a/"]),
-        (["a/b/"], "a/b/", [], ["a/b/"]),
-        (["a/b", "a/c", "d/"], "a/", ["d/"], ["a/b", "a/c"]),
+        ("a", {}),
+        ("a/", {}),
+        ("parent/a/b/c", {"parents": True}),
+        ("parent", {"exist_ok": True}),
     ],
 )
-def test_rmdir(s3bucket, touch_keys, rmdir_key, exist_keys, non_exist_keys):
-    for k in touch_keys:
-        s3bucket.touch(k)
-    S3Path(f"{s3bucket.root}/{rmdir_key}").rmdir()
-
-    for k in exist_keys:
-        assert S3Path(f"{s3bucket.root}/{k}").exists()
-
-    for k in non_exist_keys:
-        assert not S3Path(f"{s3bucket.root}/{k}").exists()
-
-
-@pytest.mark.parametrize(
-    ["touch_key", "rmdir_key", "expect"],
-    [
-        ("a", "a", NotADirectoryError),
-        ("a", "b", FileNotFoundError),
-    ],
-)
-def test_rmdir_fail(s3bucket, touch_key, rmdir_key, expect):
-    s3bucket.touch(touch_key)
-    path = S3Path(f"{s3bucket.root}/{rmdir_key}")
-    with pytest.raises(expect):
-        path.rmdir()
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_rename_fail():
-    S3Path().rename("")
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_lstat_fail():
-    S3Path().lstat()
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_link_to_fail():
-    S3Path().link_to("")
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_replace_fail():
-    S3Path().replace("")
-
-
-@pytest.mark.parametrize(
-    ["keys", "name", "expect"],
-    [
-        (("a",), "b", {"a", "b", "c"}),
-    ],
-)
-def test_touch(s3bucket, keys, name, expect):
-    for k in keys:
-        s3bucket.touch(k)
-    S3Path(f"{s3bucket.root}/{name}").touch()
-
+def test_mkdir(s3bucket, key, args):
+    s3bucket.touch("parent/")
+    S3Path(f"{s3bucket.root}/{key}").mkdir(**args)
+    assert s3bucket.get(f"{key.rstrip('/')}/")
 
 @pytest.mark.parametrize(
     ["pathstr", "expect"],
@@ -290,96 +238,59 @@ def test_mkdir_fail(s3bucket, pathstr, expect):
 
 
 @pytest.mark.parametrize(
-    ["putstr", "pathstr", "expect"],
+    ["key", "content", "expect"],
     [
-        ("foo", "foo", False),
-        ("foo/", "foo", True),
-        ("foo", "foo/", False),
-        ("foo/", "foo/", True),
-        ("foo", "bar", False),
+        ("key", "",  False),
+        ("key/", "",  True),
+        ("key/", "abc",  False),
+        ("key/file", "",  False),
+        ("key/dir/", "",  True),
     ],
 )
-def test_is_dir(s3bucket, putstr, pathstr, expect):
-    s3bucket.touch(putstr)
-    assert S3Path(f"{s3bucket.root}{pathstr}").is_dir() == expect
+def test_is_dir(s3bucket, key, content, expect):
+    s3bucket.put(key, content)
+    assert S3Path(f"{s3bucket.root}/{key}").is_dir() == expect
 
 
 @pytest.mark.parametrize(
-    ["putstr", "pathstr", "expect"],
+    ["api_name", "args"],
     [
-        ("foo", "foo", True),
-        ("foo/", "foo", False),
-        ("foo", "foo/", True),
-        ("foo/", "foo/", False),
-        ("foo", "bar", False),
+        ("home", []),
+        ("samefile", [S3Path("s3://other/abc")]),
+        ("glob", ["*.py"]),
+        ("rglob", ["*.py"]),
+        ("absolute", []),
+        ("stat", []),
+        ("owner", []),
+        ("readlink", []),
+        ("chmod", [0x666]),
+        ("lchmod", [0x666]),
+        ("unlink", []),
+        ("rmdir", []),
+        ("lstat", []),
+        ("link_to", [S3Path("s3://tmp")]),
+        ("rename", [S3Path("s3://tmp")]),
+        ("replace", [S3Path("s3://tmp")]),
+        ("symlink_to", [S3Path("s3://tmp")]),
+        ("is_file", []),
+        ("expanduser", []),
     ],
 )
-def test_is_file(s3bucket, putstr, pathstr, expect):
-    s3bucket.touch(putstr)
-    assert S3Path(f"{s3bucket.root}{pathstr}").is_file() == expect
-
-
 @pytest.mark.xfail(raises=NotImplementedError)
-def test_is_mount_fail():
-    S3Path().is_mount()
+def test_path_public_api_fail(api_name, args):
+    getattr(S3Path("s3://example/"), api_name)(*args)
 
 
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_is_symlink_fail():
-    S3Path().is_symlink()
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_absolute_fail():
-    S3Path().absolute()
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_owner():
-    S3Path().owner()
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_group_fail():
-    S3Path().group()
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def readlink():
-    S3Path().readlink()
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_lchmod_fail():
-    S3Path().lchmod(0)
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_lstat_fail():
-    S3Path().lstat()
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_symlink_to_fail():
-    S3Path().symlink_to(S3Path())
-
-
-def test_is_block_device():
-    assert not S3Path().is_block_device()
-
-
-def test_is_char_device():
-    assert not S3Path().is_char_device()
-
-
-def test_is_fifo():
-    assert not S3Path().is_fifo()
-
-
-def test_is_socket():
-    assert not S3Path().is_socket()
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def expanduser():
-    S3Path().expanduser()
+@pytest.mark.parametrize(
+    ["api_name"],
+    [
+        ("is_mount",),
+        ("is_symlink",),
+        ("is_block_device",),
+        ("is_char_device",),
+        ("is_fifo",),
+        ("is_socket",),
+    ],
+)
+def test_path_predicate(api_name):
+    assert getattr(S3Path("s3://example/com"), api_name)() == False

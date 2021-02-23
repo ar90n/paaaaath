@@ -52,11 +52,11 @@ def test_create_path_fail(uri):
     [
         (
             "http://example.com",
-            PureHttpPath("http://example.com/"),
+            HttpPath("http://example.com/"),
         ),
         (
             "http://user@example.com:80/foo/bar/piyo/../fuz",
-            PureHttpPath("http://user@example.com:80/foo/bar/fuz"),
+            HttpPath("http://user@example.com:80/foo/bar/fuz"),
         ),
     ],
 )
@@ -120,93 +120,3 @@ def test_read_bytes(httpserver, expect):
 def test_read_text(httpserver, expect):
     httpserver.expect_request("/fileA").respond_with_data(expect)
     assert HttpPath(httpserver.url_for("/fileA")).read_text() == expect
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_write_bytes_fail(httpserver):
-    httpserver.expect_request("/fileA").respond_with_data()
-    HttpPath(httpserver.url_for("/fileA")).write_bytes(b"a")
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_writ_text_fail(httpserver):
-    httpserver.expect_request("/fileA").respond_with_data()
-    HttpPath(httpserver.url_for("/fileA")).write_text("a")
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_iterdir_fail(httpserver):
-    httpserver.expect_request("/").respond_with_data()
-    set(HttpPath(httpserver.url_for("/")).iterdir())
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_glob_fail(httpserver):
-    httpserver.expect_request("/").respond_with_data()
-    set(HttpPath(httpserver.url_for("/")).glob("fileA"))
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_chmod_fail(httpserver):
-    httpserver.expect_request("/").respond_with_data()
-    HttpPath(httpserver.url_for("/")).chmod(0)
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_stat_fail(httpserver):
-    httpserver.expect_request("/").respond_with_data()
-    HttpPath(httpserver.url_for("/")).stat()
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_unlink_fail(httpserver):
-    httpserver.expect_request("/").respond_with_data()
-    HttpPath(httpserver.url_for("/")).unlink()
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_rename_fail(httpserver):
-    httpserver.expect_request("/").respond_with_data()
-    HttpPath(httpserver.url_for("/")).rename("")
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_replace_fail(httpserver):
-    httpserver.expect_request("/").respond_with_data()
-    HttpPath(httpserver.url_for("/")).replace("")
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_touch_fail(httpserver):
-    httpserver.expect_request("/").respond_with_data()
-    HttpPath(httpserver.url_for("/")).touch()
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_mkdir_fail(httpserver):
-    httpserver.expect_request("/").respond_with_data()
-    HttpPath(httpserver.url_for("/")).mkdir()
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_is_dir_fail(httpserver):
-    httpserver.expect_request("/").respond_with_data()
-    HttpPath(httpserver.url_for("/")).is_dir()
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_is_file_fail(httpserver):
-    httpserver.expect_request("/").respond_with_data()
-    HttpPath(httpserver.url_for("/")).is_file()
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_is_mount_fail(httpserver):
-    httpserver.expect_request("/").respond_with_data()
-    HttpPath(httpserver.url_for("/")).is_mount()
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_is_symlink_fail(httpserver):
-    httpserver.expect_request("/").respond_with_data()
-    HttpPath(httpserver.url_for("/")).is_symlink()

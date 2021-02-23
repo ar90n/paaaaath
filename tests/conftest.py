@@ -72,5 +72,5 @@ def s3bucket():
 
     with mock_s3():
         # To connect with moto, recreate S3 client
-        paaaaath.s3._S3Accessor._client = paaaaath.s3.S3Client()
+        paaaaath.s3.S3Path._client = boto3.client("s3")  # low-level client is thread safe
         yield S3Bucket("test")
