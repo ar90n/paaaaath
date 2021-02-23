@@ -3,11 +3,10 @@
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
 
 ## About The Project
 
-This project is motivated to provide a useful path-like object.
+This project is motivated to provide a useful alternative Path object.
 
 ### Built With
 
@@ -66,15 +65,13 @@ Project Link: [https://github.com/ar90n/paaaaath](https://github.com/ar90n/paaaa
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
-[contributors-shield]: https://img.shields.io/github/contributors/ar90n/repo.svg?style=for-the-badge
-[contributors-url]: https://github.com/ar90n/repo/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/ar90n/repo.svg?style=for-the-badge
-[forks-url]: https://github.com/ar90n/repo/network/members
-[stars-shield]: https://img.shields.io/github/stars/ar90n/repo.svg?style=for-the-badge
-[stars-url]: https://github.com/ar90n/repo/stargazers
-[issues-shield]: https://img.shields.io/github/issues/ar90n/repo.svg?style=for-the-badge
-[issues-url]: https://github.com/ar90n/repo/issues
-[license-shield]: https://img.shields.io/github/license/ar90n/repo.svg?style=for-the-badge
-[license-url]: https://github.com/ar90n/repo/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/ar90n
+[contributors-shield]: https://img.shields.io/github/contributors/ar90n/paaaaath.svg?style=for-the-badge
+[contributors-url]: https://github.com/ar90n/paaaaath/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/ar90n/paaaaath.svg?style=for-the-badge
+[forks-url]: https://github.com/ar90n/paaaaath/network/members
+[stars-shield]: https://img.shields.io/github/stars/ar90n/paaaaath.svg?style=for-the-badge
+[stars-url]: https://github.com/ar90n/paaaaath/stargazers
+[issues-shield]: https://img.shields.io/github/issues/ar90n/paaaaath.svg?style=for-the-badge
+[issues-url]: https://github.com/ar90n/paaaaath/issues
+[license-shield]: https://img.shields.io/github/license/ar90n/paaaaath.svg?style=for-the-badge
+[license-url]: https://github.com/ar90n/paaaaath/blob/master/LICENSE.txt
