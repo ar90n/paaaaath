@@ -8,7 +8,7 @@ from urllib.parse import quote_from_bytes, urlparse
 from .common import Path, PurePath
 
 
-class _UriFlavour(pathlib._Flavour): # type: ignore
+class _UriFlavour(pathlib._Flavour):  # type: ignore
     sep = "/"
     altsep = ""
     has_drv = True
