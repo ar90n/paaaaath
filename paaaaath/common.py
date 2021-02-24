@@ -94,7 +94,7 @@ class Path(PurePath, pathlib.Path):
         return PosixPath
 
 
-class _SkeletonAccessor(pathlib._Accessor):
+class _SkeletonAccessor(pathlib._Accessor): # type: ignore
     @staticmethod
     def utime(*args, **kwargs):
         raise NotImplementedError("utime() not available on this system")
