@@ -1,10 +1,10 @@
-import collections
 import io
+import collections
 import time
 
-import pytest
 
-from paaaaath import S3Path
+import pytest
+from paaaaath import GCSPath
 
 
 @pytest.mark.parametrize(
@@ -17,9 +17,9 @@ from paaaaath import S3Path
         ("foo", "bar", False),
     ],
 )
-def test_exists(s3bucket, putstr, pathstr, expect):
-    s3bucket.put(putstr)
-    assert S3Path(f"{s3bucket.root}{pathstr}").exists() == expect
+def test_exists(gcsbucket, putstr, pathstr, expect):
+    gcsbucket.put(putstr)
+    assert GCSPath(f"{gcsbucket.root}{pathstr}").exists() == expect
 
 
 @pytest.mark.parametrize(
@@ -29,8 +29,8 @@ def test_exists(s3bucket, putstr, pathstr, expect):
         ("rb", "wb", io.BufferedIOBase, b"this is file A"),
     ],
 )
-def test_open(s3bucket, rmode, wmode, file_cls, expect):
-    p = S3Path(f"{s3bucket.root}/file")
+def test_open(gcsbucket, rmode, wmode, file_cls, expect):
+    p = GCSPath(f"{gcsbucket.root}/file")
     with p.open(wmode) as fw:
         assert isinstance(fw, file_cls)
         fw.write(expect)
@@ -45,10 +45,10 @@ def test_open(s3bucket, rmode, wmode, file_cls, expect):
         ("abcdefg",),
     ],
 )
-def test_read_write_text(s3bucket, expect):
-    url = f"{s3bucket.root}/file"
-    S3Path(url).write_text(expect)
-    assert S3Path(url).read_text() == expect
+def test_read_write_text(gcsbucket, expect):
+    url = f"{gcsbucket.root}/file"
+    GCSPath(url).write_text(expect)
+    assert GCSPath(url).read_text() == expect
 
 
 @pytest.mark.parametrize(
@@ -57,10 +57,10 @@ def test_read_write_text(s3bucket, expect):
         (b"abcdefg",),
     ],
 )
-def test_read_write_bytes(s3bucket, expect):
-    url = f"{s3bucket.root}/file"
-    S3Path(url).write_bytes(expect)
-    assert S3Path(url).read_bytes() == expect
+def test_read_write_bytes(gcsbucket, expect):
+    url = f"{gcsbucket.root}/file"
+    GCSPath(url).write_bytes(expect)
+    assert GCSPath(url).read_bytes() == expect
 
 
 @pytest.mark.parametrize(
@@ -73,12 +73,12 @@ def test_read_write_bytes(s3bucket, expect):
         ([str(i) for i in range(1024)], "/", {str(i) for i in range(1024)}),
     ],
 )
-def test_iterdir(s3bucket, keys, root, expect):
+def test_iterdir(gcsbucket, keys, root, expect):
     for k in keys:
-        s3bucket.put(k)
-    it = S3Path(f"{s3bucket.root}/{root}").iterdir()
+        gcsbucket.put(k)
+    it = GCSPath(f"{gcsbucket.root}/{root}").iterdir()
     assert isinstance(it, collections.Iterable)
-    assert set(it) == {S3Path(f"{s3bucket.root}/{p}") for p in expect}
+    assert set(it) == {GCSPath(f"{gcsbucket.root}/{p}") for p in expect}
 
 
 @pytest.mark.parametrize(
@@ -87,13 +87,13 @@ def test_iterdir(s3bucket, keys, root, expect):
         ({"a": "abc"}, "b", {"a": "abc", "b": ""}),
     ],
 )
-def test_touch(s3bucket, contents, key, expect):
+def test_touch(gcsbucket, contents, key, expect):
     for k, v in contents.items():
-        s3bucket.put(k, v)
-    S3Path(f"{s3bucket.root}/{key}").touch(exist_ok=False)
+        gcsbucket.put(k, v)
+    GCSPath(f"{gcsbucket.root}/{key}").touch(exist_ok=False)
 
     for k, v in expect.items():
-        assert s3bucket.get(k)["Body"].read().decode("utf-8") == v
+        assert gcsbucket.get(k).download_as_string().decode("utf-8") == v
 
 
 @pytest.mark.parametrize(
@@ -102,31 +102,31 @@ def test_touch(s3bucket, contents, key, expect):
         ({"a": "abc"},),
     ],
 )
-def test_touch_exist_ok(s3bucket, contents):
+def test_touch_exist_ok(gcsbucket, contents):
     originals = {}
     for k, v in contents.items():
-        s3bucket.put(k, v)
-        originals[k] = s3bucket.get(k)
+        gcsbucket.put(k, v)
+        originals[k] = gcsbucket.get(k)
 
     time.sleep(1)
 
     for k, v in contents.items():
-        S3Path(f"{s3bucket.root}/{k}").touch(exist_ok=True)
+        GCSPath(f"{gcsbucket.root}/{k}").touch(exist_ok=True)
 
     for k, org in originals.items():
-        touched = s3bucket.get(k)
-        assert org["ETag"] == touched["ETag"]
-        assert org["LastModified"] < touched["LastModified"]
+        touched = gcsbucket.get(k)
+        assert org.etag == touched.etag
+        assert org.updated < touched.updated
 
 
 @pytest.mark.parametrize(
     ["key", "args", "expect"],
     [("a/b", {}, FileNotFoundError), ("exist", {"exist_ok": False}, FileExistsError)],
 )
-def test_touch_fail(s3bucket, key, args, expect):
-    s3bucket.put("exist")
+def test_touch_fail(gcsbucket, key, args, expect):
+    gcsbucket.put("exist")
     with pytest.raises(expect):
-        S3Path(f"{s3bucket.root}/{key}").touch(**args)
+        GCSPath(f"{gcsbucket.root}/{key}").touch(**args)
 
 
 @pytest.mark.parametrize(
@@ -138,10 +138,10 @@ def test_touch_fail(s3bucket, key, args, expect):
         ("parent", {"exist_ok": True}),
     ],
 )
-def test_mkdir(s3bucket, key, args):
-    s3bucket.put("parent/")
-    S3Path(f"{s3bucket.root}/{key}").mkdir(**args)
-    assert s3bucket.get(f"{key.rstrip('/')}/")
+def test_mkdir(gcsbucket, key, args):
+    gcsbucket.put("parent/")
+    GCSPath(f"{gcsbucket.root}/{key}").mkdir(**args)
+    assert gcsbucket.get(f"{key.rstrip('/')}/")
 
 
 @pytest.mark.parametrize(
@@ -151,10 +151,10 @@ def test_mkdir(s3bucket, key, args):
         ("parent/a/b/c", FileNotFoundError),
     ],
 )
-def test_mkdir_fail(s3bucket, pathstr, expect):
-    s3bucket.put("parent/")
+def test_mkdir_fail(gcsbucket, pathstr, expect):
+    gcsbucket.put("parent/")
     with pytest.raises(expect):
-        S3Path(f"{s3bucket.root}/{pathstr}").mkdir()
+        GCSPath(f"{gcsbucket.root}/{pathstr}").mkdir()
 
 
 @pytest.mark.parametrize(
@@ -167,16 +167,16 @@ def test_mkdir_fail(s3bucket, pathstr, expect):
         ("key/dir/", "", True),
     ],
 )
-def test_is_dir(s3bucket, key, content, expect):
-    s3bucket.put(key, content)
-    assert S3Path(f"{s3bucket.root}/{key}").is_dir() == expect
+def test_is_dir(gcsbucket, key, content, expect):
+    gcsbucket.put(key, content)
+    assert GCSPath(f"{gcsbucket.root}/{key}").is_dir() == expect
 
 
 @pytest.mark.parametrize(
     ["api_name", "args"],
     [
         ("home", []),
-        ("samefile", [S3Path("s3://other/abc")]),
+        ("samefile", [GCSPath("gs://other/abc")]),
         ("glob", ["*.py"]),
         ("rglob", ["*.py"]),
         ("absolute", []),
@@ -188,17 +188,17 @@ def test_is_dir(s3bucket, key, content, expect):
         ("unlink", []),
         ("rmdir", []),
         ("lstat", []),
-        ("link_to", [S3Path("s3://tmp")]),
-        ("rename", [S3Path("s3://tmp")]),
-        ("replace", [S3Path("s3://tmp")]),
-        ("symlink_to", [S3Path("s3://tmp")]),
+        ("link_to", [GCSPath("gs://tmp")]),
+        ("rename", [GCSPath("gs://tmp")]),
+        ("replace", [GCSPath("gs://tmp")]),
+        ("symlink_to", [GCSPath("gs://tmp")]),
         ("is_file", []),
         ("expanduser", []),
     ],
 )
 @pytest.mark.xfail(raises=NotImplementedError)
 def test_path_public_api_fail(api_name, args):
-    getattr(S3Path("s3://example/"), api_name)(*args)
+    getattr(GCSPath("gs://example/"), api_name)(*args)
 
 
 @pytest.mark.parametrize(
@@ -213,4 +213,4 @@ def test_path_public_api_fail(api_name, args):
     ],
 )
 def test_path_predicate(api_name):
-    assert getattr(S3Path("s3://example/com"), api_name)() == False
+    assert getattr(GCSPath("gs://example/com"), api_name)() == False
