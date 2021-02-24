@@ -2,8 +2,10 @@ import sys
 import os
 import pathlib
 
+
 def _f(f):
     return None
+
 
 class PurePath(pathlib.PurePath):
     def __new__(cls, *args):
@@ -36,9 +38,12 @@ class PurePath(pathlib.PurePath):
 
         return PurePosixPath
 
+
 if sys.version_info < (3, 9):
+
     def with_stem(self, stem):
         return self.with_name(stem + self.suffix)
+
     setattr(PurePath, with_stem.__name__, with_stem)
 
     def is_relative_to(self, *other):
@@ -47,7 +52,9 @@ if sys.version_info < (3, 9):
             return True
         except ValueError:
             return False
+
     setattr(PurePath, is_relative_to.__name__, is_relative_to)
+
 
 class Path(PurePath, pathlib.Path):
     def __new__(cls, *args, **kwargs):
