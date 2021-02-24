@@ -6,7 +6,7 @@ authors = ["Masahiro Wada <argon.argon.argon@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.8.6"
+python = "^3.8"
 smart-open = {extras = ["http", "s3"], version = "^4.1.2"}
 lambdas = "^0.1.0"
 
