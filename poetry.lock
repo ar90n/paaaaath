@@ -121,22 +121,22 @@ python-versions = "*"
 
 [[package]]
 name = "boto3"
-version = "1.17.13"
+version = "1.17.14"
 description = "The AWS SDK for Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">= 2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 
 [package.dependencies]
-botocore = ">=1.20.13,<1.21.0"
+botocore = ">=1.20.14,<1.21.0"
 jmespath = ">=0.7.1,<1.0.0"
 s3transfer = ">=0.3.0,<0.4.0"
 
 [[package]]
 name = "botocore"
-version = "1.20.13"
+version = "1.20.14"
 description = "Low-level, data-driven core of boto 3."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">= 2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 
@@ -174,14 +174,14 @@ python-versions = ">=3.6.1"
 
 [[package]]
 name = "cfn-lint"
-version = "0.45.0"
+version = "0.46.0"
 description = "Checks CloudFormation templates for practices and behaviour that could potentially be improved"
 category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [package.dependencies]
-aws-sam-translator = ">=1.25.0"
+aws-sam-translator = ">=1.34.0"
 jsonpatch = {version = "*", markers = "python_version != \"3.4\""}
 jsonschema = ">=3.0,<4.0"
 junit-xml = ">=1.9,<2.0"
@@ -596,7 +596,7 @@ i18n = ["Babel (>=0.8)"]
 name = "jmespath"
 version = "0.10.0"
 description = "JSON Matching Expressions"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
@@ -1047,7 +1047,10 @@ python-versions = ">=3.5"
 [package.dependencies]
 attrs = ">=19.0"
 filelock = ">=3.0"
-mypy = {version = ">=0.780", markers = "python_version >= \"3.9\""}
+mypy = [
+    {version = ">=0.700", markers = "python_version >= \"3.8\" and python_version < \"3.9\""},
+    {version = ">=0.780", markers = "python_version >= \"3.9\""},
+]
 pytest = ">=3.5"
 
 [[package]]
@@ -1071,7 +1074,7 @@ testing = ["filelock"]
 name = "python-dateutil"
 version = "2.8.1"
 description = "Extensions to the standard Python datetime module"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 
@@ -1177,7 +1180,7 @@ docutils = ">=0.11,<1.0"
 
 [[package]]
 name = "rsa"
-version = "4.7.1"
+version = "4.7.2"
 description = "Pure-Python RSA implementation"
 category = "dev"
 optional = false
@@ -1190,7 +1193,7 @@ pyasn1 = ">=0.1.3"
 name = "s3transfer"
 version = "0.3.4"
 description = "An Amazon S3 Transfer Manager"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -1201,7 +1204,7 @@ botocore = ">=1.12.36,<2.0a.0"
 name = "six"
 version = "1.15.0"
 description = "Python 2 and 3 compatibility utilities"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
@@ -1214,6 +1217,7 @@ optional = false
 python-versions = ">=3.6.*"
 
 [package.dependencies]
+boto3 = {version = "*", optional = true, markers = "extra == \"s3\""}
 requests = {version = "*", optional = true, markers = "extra == \"http\""}
 
 [package.extras]
@@ -1402,8 +1406,8 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.9"
-content-hash = "e7dd44d25d8b241e7814cf9a279aaa9ef6d65ae16fc85b0d7d7ffaaa04d1283d"
+python-versions = "^3.8.6"
+content-hash = "79cff845754ca51e4d9f9503c3471cb804dcad4ec13ea608ca9a8d368b8d435d"
 
 [metadata.files]
 apipkg = [
@@ -1447,12 +1451,12 @@ boto = [
     {file = "boto-2.49.0.tar.gz", hash = "sha256:ea0d3b40a2d852767be77ca343b58a9e3a4b00d9db440efb8da74b4e58025e5a"},
 ]
 boto3 = [
-    {file = "boto3-1.17.13-py2.py3-none-any.whl", hash = "sha256:58823abe27f3ab76761e6ba421ceed9f6011da2267d1622547efb358be507896"},
-    {file = "boto3-1.17.13.tar.gz", hash = "sha256:27e9eb7d03ace9602777d0e808901812dfbb0c8c3e9454ab10e7ad1656a86a2d"},
+    {file = "boto3-1.17.14-py2.py3-none-any.whl", hash = "sha256:95e23684bccdb0e02910fd71586ca2a1941a0f96ba1a8753e5f1e990c8fd25d9"},
+    {file = "boto3-1.17.14.tar.gz", hash = "sha256:a1dc13aa5fac7bc6df0ca29e0a93e320a7a2370f9fe03cfb7284090d9180b97a"},
 ]
 botocore = [
-    {file = "botocore-1.20.13-py2.py3-none-any.whl", hash = "sha256:84d44036b1c174d4973c58387acefd851e71fed3ae8cc818b76b817556b59156"},
-    {file = "botocore-1.20.13.tar.gz", hash = "sha256:9ae7785f8d5150b720a4b5ddde7b4b4da447da1d084375fc5de61f8b0ae46023"},
+    {file = "botocore-1.20.14-py2.py3-none-any.whl", hash = "sha256:38f73dca0e3f2448ad91f6dbff99fc09ec1b2b9250a8b4871c90b8296f87d572"},
+    {file = "botocore-1.20.14.tar.gz", hash = "sha256:2a07533de92603607c8b594ff92647f5d5a39e75f66c9476ccd30ed4d6de37ae"},
 ]
 certifi = [
     {file = "certifi-2020.12.5-py2.py3-none-any.whl", hash = "sha256:719a74fb9e33b9bd44cc7f3a8d94bc35e4049deebe19ba7d8e108280cfd59830"},
@@ -1502,8 +1506,8 @@ cfgv = [
     {file = "cfgv-3.2.0.tar.gz", hash = "sha256:cf22deb93d4bcf92f345a5c3cd39d3d41d6340adc60c78bbbd6588c384fda6a1"},
 ]
 cfn-lint = [
-    {file = "cfn-lint-0.45.0.tar.gz", hash = "sha256:b3791d6a56cfbc0a9d316957c89a2efe3a9eb3dbbd9db89c38e1d8df44f0d970"},
-    {file = "cfn_lint-0.45.0-py3-none-any.whl", hash = "sha256:ad61e1b4c7507353fa285887c4069b7a18c2909922a6bfe01a72c4712be9a86e"},
+    {file = "cfn-lint-0.46.0.tar.gz", hash = "sha256:205131d32cdd8c1689af7ae1053f6269b106d7d79fce2ff150c655e80d4317b4"},
+    {file = "cfn_lint-0.46.0-py3-none-any.whl", hash = "sha256:678642c1cc1d711457470ac1b8f3134320c82f409234f19f671e5ea1869515e8"},
 ]
 chardet = [
     {file = "chardet-4.0.0-py2.py3-none-any.whl", hash = "sha256:f864054d66fd9118f2e67044ac8981a54775ec5b67aed0441892edb553d21da5"},
@@ -2009,8 +2013,8 @@ restructuredtext-lint = [
     {file = "restructuredtext_lint-1.3.2.tar.gz", hash = "sha256:d3b10a1fe2ecac537e51ae6d151b223b78de9fafdd50e5eb6b08c243df173c80"},
 ]
 rsa = [
-    {file = "rsa-4.7.1-py3-none-any.whl", hash = "sha256:74ba16e7ef58920b80b5c54c1c1066d391a2c1e812c466773f74c634eb12253b"},
-    {file = "rsa-4.7.1.tar.gz", hash = "sha256:9d74d1ff850745c9802cd6b53382bfeec7f6dbe4e26ee2759241ed1e7b0ecf5d"},
+    {file = "rsa-4.7.2-py3-none-any.whl", hash = "sha256:78f9a9bf4e7be0c5ded4583326e7461e3a3c5aae24073648b4bdfa797d78c9d2"},
+    {file = "rsa-4.7.2.tar.gz", hash = "sha256:9d689e6ca1b3038bc82bf8d23e944b6b6037bc02301a574935b2dd946e0353b9"},
 ]
 s3transfer = [
     {file = "s3transfer-0.3.4-py2.py3-none-any.whl", hash = "sha256:1e28620e5b444652ed752cf87c7e0cb15b0e578972568c6609f0f18212f259ed"},
