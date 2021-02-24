@@ -1,5 +1,10 @@
+import sys
 import os
 import pathlib
+
+
+def _f(f):
+    return None
 
 
 class PurePath(pathlib.PurePath):
@@ -32,6 +37,23 @@ class PurePath(pathlib.PurePath):
         from .posix import PurePosixPath
 
         return PurePosixPath
+
+
+if sys.version_info < (3, 9):
+
+    def with_stem(self, stem):
+        return self.with_name(stem + self.suffix)
+
+    setattr(PurePath, with_stem.__name__, with_stem)
+
+    def is_relative_to(self, *other):
+        try:
+            self.relative_to(*other)
+            return True
+        except ValueError:
+            return False
+
+    setattr(PurePath, is_relative_to.__name__, is_relative_to)
 
 
 class Path(PurePath, pathlib.Path):
@@ -72,7 +94,7 @@ class Path(PurePath, pathlib.Path):
         return PosixPath
 
 
-class _SkeletonAccessor(pathlib._Accessor):
+class _SkeletonAccessor(pathlib._Accessor):  # type: ignore
     @staticmethod
     def utime(*args, **kwargs):
         raise NotImplementedError("utime() not available on this system")

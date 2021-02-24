@@ -1,0 +1,7 @@
+services:
+  paaaaath:
+    image: python:3.8
+    volumes:
+      - ./:/paaaaath:cached
+    working_dir: /paaaaath
+    command: sh -c "pip install poetry && poetry install && poetry run pytest"
