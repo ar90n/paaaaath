@@ -1,17 +1,19 @@
 import fnmatch
 import pathlib
 import posixpath
+from typing import List
 import re
 from os import fsencode
 from urllib.parse import quote_from_bytes, urlparse
 
-from .common import Path, PurePath
+from .common import PurePath
 
 
 class _UriFlavour(pathlib._Flavour):  # type: ignore
     sep = "/"
     altsep = ""
     has_drv = True
+    schemes: List[str] = []
     pathmod = type("fakepath", (), {"normpath": lambda _, x: x})()
 
     is_supported = True
@@ -29,6 +31,12 @@ class _UriFlavour(pathlib._Flavour):  # type: ignore
         drv = f"{scheme}://{netloc}" if scheme != "" else ""
         part = path.lstrip("/")
         root = sep if drv != "" or path != part else ""
+
+        if drv != "" and (
+            0 < len(self.schemes)
+            and not any((drv.startswith(f"{s}://") for s in self.schemes))
+        ):
+            raise ValueError(f"http and https are only supported. but {drv} was given.")
         return drv, root, part
 
     def casefold(self, s):

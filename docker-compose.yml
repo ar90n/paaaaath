@@ -4,4 +4,8 @@ services:
     volumes:
       - ./:/paaaaath:cached
     working_dir: /paaaaath
-    command: sh -c "pip install poetry && poetry install && poetry run pytest"
+    depends_on:
+      - gcs
+    command: sh -c "pip install poetry && poetry install && poetry run wait-for-it -s gcs:4443 -- pytest"
+  gcs:
+    image: fsouza/fake-gcs-server

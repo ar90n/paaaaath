@@ -29,6 +29,11 @@ class PurePath(pathlib.PurePath):
 
             return PureS3Path
 
+        if 0 < len(args) and args[0].startswith("gs://"):
+            from .gcs import PureGCSPath
+
+            return PureGCSPath
+
         if os.name == "nt":
             from .windows import PureWindowsPath
 
@@ -83,6 +88,11 @@ class Path(PurePath, pathlib.Path):
             from .s3 import S3Path
 
             return S3Path
+
+        if 0 < len(args) and args[0].startswith("gs://"):
+            from .gcs import GCSPath
+
+            return GCSPath
 
         if os.name == "nt":
             from .windows import WindowsPath
