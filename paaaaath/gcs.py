@@ -31,7 +31,7 @@ class GCSPath(_SkeletonPath, PureGCSPath):
     def touch(self, mode=0x666, exist_ok=True):
         if not self._exists(to_dir_key(self.parent.key)):
             raise FileNotFoundError
-    
+
         if exist_ok:
             try:
                 bucket = self._client.get_bucket(self.bucket)
@@ -43,7 +43,7 @@ class GCSPath(_SkeletonPath, PureGCSPath):
         if not exist_ok and self.exists():
             raise FileExistsError
         gcs.open(self.bucket, self.key, WRITE_BINARY, client=self._client).close()
-    
+
     def exists(self):
         file_key = to_file_key(self.key)
         dir_key = to_dir_key(self.key)
@@ -52,11 +52,13 @@ class GCSPath(_SkeletonPath, PureGCSPath):
     def _mkdir(self, mode=0x777):
         if not self._exists(to_dir_key(self.parent.key)):
             raise FileNotFoundError
-    
+
         if self.exists():
             raise OSError
-        gcs.open(self.bucket, to_dir_key(self.key), WRITE_BINARY, client=self._client).close()
-    
+        gcs.open(
+            self.bucket, to_dir_key(self.key), WRITE_BINARY, client=self._client
+        ).close()
+
     def iterdir(self):
         prefix = to_dir_key(self.key) if self.key != "" else self.key
         blobs = self._client.list_blobs(self.bucket, prefix=prefix, delimiter="/")

@@ -1,6 +1,7 @@
 import fnmatch
 import pathlib
 import posixpath
+from typing import List
 import re
 from os import fsencode
 from urllib.parse import quote_from_bytes, urlparse
@@ -12,7 +13,7 @@ class _UriFlavour(pathlib._Flavour):  # type: ignore
     sep = "/"
     altsep = ""
     has_drv = True
-    schemes = []
+    schemes: List[str] = []
     pathmod = type("fakepath", (), {"normpath": lambda _, x: x})()
 
     is_supported = True

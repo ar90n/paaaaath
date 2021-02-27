@@ -6,8 +6,10 @@ from .common import PurePath, _SkeletonPath
 from .blob import to_file_key, to_dir_key, PureBlobPath
 from .uri import _UriFlavour
 
+
 class _S3Flavour(_UriFlavour):
     schemes = ["s3"]
+
 
 _s3_flavour = _S3Flavour()
 

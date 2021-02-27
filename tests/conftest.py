@@ -90,7 +90,9 @@ def gcsbucket():
             client_options={"api_endpoint": "http://127.0.0.1:4443"},
         )
 
-    bucket = "".join([random.choice("0123456789abcdefghijklmnopqrstuvwxyz") for _ in range(32)])
+    bucket = "".join(
+        [random.choice("0123456789abcdefghijklmnopqrstuvwxyz") for _ in range(32)]
+    )
     yield GCSBucket(bucket)
 
 
