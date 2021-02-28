@@ -3,6 +3,7 @@ import os
 
 import random
 import boto3
+from botocore.client import Config
 import pytest
 from moto import mock_s3
 from google.auth.credentials import AnonymousCredentials
@@ -101,25 +102,30 @@ def gcsbucket():
 
 @pytest.fixture
 def s3bucket():
-    with mock_s3():
-        client = boto3.client("s3", region_name="us-east-1")
+    client = boto3.client(
+        "s3",
+        endpoint_url=os.environ.get("S3_API_ENDPOINT", "http://127.0.0.1:9000"),
+    )
 
-        class S3Bucket(Bucket):
-            def __init__(self, name):
-                self.name = name
-                self._client = client
-                self._client.create_bucket(Bucket=name)
+    class S3Bucket(Bucket):
+        def __init__(self, name):
+            self.name = name
+            self._client = client
+            self._client.create_bucket(Bucket=name)
 
-            def put(self, key, content=b""):
-                self._client.put_object(Bucket=self.name, Body=content, Key=key)
+        def put(self, key, content=b""):
+            self._client.put_object(Bucket=self.name, Body=content, Key=key)
 
-            def get(self, key):
-                return self._client.get_object(Bucket=self.name, Key=key)
+        def get(self, key):
+            return self._client.get_object(Bucket=self.name, Key=key)
 
-            @property
-            def root(self):
-                return f"s3://{self.name}/"
+        @property
+        def root(self):
+            return f"s3://{self.name}/"
 
-        # To connect with moto, recreate S3 client
-        paaaaath.s3.S3Path.register_client(client)
-        yield S3Bucket("test")
+    # To connect with moto, recreate S3 client
+    paaaaath.s3.S3Path.register_client(client)
+    bucket = "".join(
+        [random.choice("0123456789abcdefghijklmnopqrstuvwxyz") for _ in range(32)]
+    )
+    yield S3Bucket(bucket)

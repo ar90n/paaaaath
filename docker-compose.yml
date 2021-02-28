@@ -6,9 +6,13 @@ services:
     working_dir: /paaaaath
     environment:
       - GCS_API_ENDPOINT=http://gcs:4443
+      - S3_API_ENDPOINT=http://s3:9000
+      - AWS_ACCESS_KEY_ID=minioadmin
+      - AWS_SECRET_ACCESS_KEY=minioadmin
     depends_on:
       - gcs
-    command: sh -c "pip install poetry && poetry install && poetry run wait-for-it -s gcs:4443 -- pytest -n 4"
+      - s3
+    command: sh -c "pip install poetry && poetry install && poetry run wait-for-it -s gcs:4443 -s s3:9000 -- pytest -n 4"
   gcs:
     image: fsouza/fake-gcs-server
     entrypoint:
@@ -17,3 +21,6 @@ services:
       - http
       - -external-url
       - http://gcs:4443
+  s3:
+    image: minio/minio
+    command: --compat server /data
