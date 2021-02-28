@@ -1,4 +1,5 @@
 from abc import ABC
+import os
 
 import random
 import boto3
@@ -65,16 +66,21 @@ def check_str():
 
 @pytest.fixture
 def gcsbucket():
+    client = storage.Client(
+        credentials=AnonymousCredentials(),
+        client_options={
+            "api_endpoint": os.environ.get("GCS_API_ENDPOINT", "http://127.0.0.1:4443")
+        },
+        project="test",
+    )
+
     class GCSBucket(Bucket):
         def __init__(self, name):
             self.name = name
-            self._client = storage.Client(
-                credentials=AnonymousCredentials(),
-                client_options={"api_endpoint": "http://127.0.0.1:4443"},
-            )
+            self._client = client
             self._client.create_bucket(name)
 
-        def put(self, key, content=b""):
+        def put(self, key, content=""):
             self._client.get_bucket(self.name).blob(key).upload_from_string(content)
 
         def get(self, key):
@@ -84,11 +90,8 @@ def gcsbucket():
         def root(self):
             return f"gs://{self.name}/"
 
-        # To connect with fake-gcs-server, recreate gcs client
-        paaaaath.gcs.GCSPath._client = storage.Client(
-            credentials=AnonymousCredentials(),
-            client_options={"api_endpoint": "http://127.0.0.1:4443"},
-        )
+    # To connect with fake-gcs-server, recreate gcs client
+    paaaaath.gcs.GCSPath.register_client(client)
 
     bucket = "".join(
         [random.choice("0123456789abcdefghijklmnopqrstuvwxyz") for _ in range(32)]
@@ -98,25 +101,25 @@ def gcsbucket():
 
 @pytest.fixture
 def s3bucket():
-    class S3Bucket(Bucket):
-        def __init__(self, name):
-            self.name = name
-            self._client = boto3.client("s3", region_name="us-east-1")
-            self._client.create_bucket(Bucket=name)
-
-        def put(self, key, content=b""):
-            self._client.put_object(Bucket=self.name, Body=content, Key=key)
-
-        def get(self, key):
-            return self._client.get_object(Bucket=self.name, Key=key)
-
-        @property
-        def root(self):
-            return f"s3://{self.name}/"
-
     with mock_s3():
+        client = boto3.client("s3", region_name="us-east-1")
+
+        class S3Bucket(Bucket):
+            def __init__(self, name):
+                self.name = name
+                self._client = client
+                self._client.create_bucket(Bucket=name)
+
+            def put(self, key, content=b""):
+                self._client.put_object(Bucket=self.name, Body=content, Key=key)
+
+            def get(self, key):
+                return self._client.get_object(Bucket=self.name, Key=key)
+
+            @property
+            def root(self):
+                return f"s3://{self.name}/"
+
         # To connect with moto, recreate S3 client
-        paaaaath.s3.S3Path._client = boto3.client(
-            "s3"
-        )  # low-level client is thread safe
+        paaaaath.s3.S3Path.register_client(client)
         yield S3Bucket("test")

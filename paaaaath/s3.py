@@ -2,8 +2,7 @@ import boto3
 from botocore.exceptions import ClientError
 from smart_open import smart_open_lib
 
-from .common import PurePath, _SkeletonPath
-from .blob import to_file_key, to_dir_key, PureBlobPath
+from .blob import to_file_key, to_dir_key, PureBlobPath, _SkeletonBlobPath
 from .uri import _UriFlavour
 
 
@@ -19,9 +18,8 @@ class PureS3Path(PureBlobPath):
     __slots__ = ()
 
 
-class S3Path(_SkeletonPath, PureS3Path):
+class S3Path(_SkeletonBlobPath, PureS3Path):
     __slots__ = ()
-    _client = boto3.client("s3")  # low-level client is thread safe
 
     def open(self, *args, **kwargs):
         return smart_open_lib.open(str(self), *args, **kwargs)
@@ -94,3 +92,7 @@ class S3Path(_SkeletonPath, PureS3Path):
         except ClientError as e:
             return False
         return True
+
+    @staticmethod
+    def _create_client():
+        return boto3.client("s3")  # low-level client is thread safe

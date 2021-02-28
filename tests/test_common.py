@@ -4,9 +4,19 @@ import pickle
 import pytest
 
 import paaaaath
-from paaaaath import (HttpPath, Path, PosixPath, PureHttpPath, PurePath,
-                      PurePosixPath, PureS3Path, PureUriPath, PureWindowsPath,
-                      S3Path, WindowsPath)
+from paaaaath import (
+    HttpPath,
+    Path,
+    PosixPath,
+    PureHttpPath,
+    PurePath,
+    PurePosixPath,
+    PureS3Path,
+    PureUriPath,
+    PureWindowsPath,
+    S3Path,
+    WindowsPath,
+)
 
 pure_path_classes = [(PureUriPath,), (PureHttpPath,), (PureS3Path,)]
 

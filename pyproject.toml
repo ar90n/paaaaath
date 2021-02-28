@@ -7,7 +7,7 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-smart-open = {extras = ["http", "s3"], version = "^4.1.2"}
+smart-open = {extras = ["http", "s3", "gcs"], version = "^4.1.2"}
 lambdas = "^0.1.0"
 google-cloud-storage = "^1.36.1"
 
