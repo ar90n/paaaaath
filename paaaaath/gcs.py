@@ -3,8 +3,7 @@ from smart_open import smart_open_lib, gcs
 from smart_open.constants import WRITE_BINARY
 from google.api_core.exceptions import NotFound
 
-from .common import _SkeletonPath
-from .blob import PureBlobPath, to_dir_key, to_file_key
+from .blob import _SkeletonBlobPath, PureBlobPath, to_dir_key, to_file_key
 from .uri import _UriFlavour
 
 
@@ -16,13 +15,12 @@ _gcs_flavour = _GCSFlavour()
 
 
 class PureGCSPath(PureBlobPath):
+    __slots__ = ()
     _flavour = _gcs_flavour
-    __slots__ = ()
 
 
-class GCSPath(_SkeletonPath, PureGCSPath):
+class GCSPath(_SkeletonBlobPath, PureGCSPath):
     __slots__ = ()
-    _client = storage.Client()
 
     def open(self, *args, **kwargs):
         kwargs = {**kwargs, "transport_params": {"client": self._client}}
@@ -81,3 +79,7 @@ class GCSPath(_SkeletonPath, PureGCSPath):
             return True
 
         return self._client.get_bucket(self.bucket).get_blob(key) is not None
+
+    @staticmethod
+    def _create_client():
+        return storage.Client()

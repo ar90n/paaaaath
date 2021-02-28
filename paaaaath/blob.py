@@ -1,4 +1,4 @@
-from .common import PurePath
+from .common import _SkeletonPath, PurePath
 
 
 def to_file_key(key: str) -> str:
@@ -29,3 +29,20 @@ class PureBlobPath(PurePath):
     @property
     def key(self):
         return self._flavour.sep.join(self.parts[1:])
+
+
+class _SkeletonBlobPath(_SkeletonPath):
+    __client = None
+
+    def _create_client(self):
+        raise NotImplementedError("_create_client() must be implemented.")
+
+    @property
+    def _client(self):
+        if self.__client is None:
+            self.__client = self._create_client()
+        return self.__client
+
+    @classmethod
+    def register_client(cls, client):
+        cls.__client = client

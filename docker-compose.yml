@@ -4,8 +4,16 @@ services:
     volumes:
       - ./:/paaaaath:cached
     working_dir: /paaaaath
+    environment:
+      - GCS_API_ENDPOINT=http://gcs:4443
     depends_on:
       - gcs
-    command: sh -c "pip install poetry && poetry install && poetry run wait-for-it -s gcs:4443 -- pytest"
+    command: sh -c "pip install poetry && poetry install && poetry run wait-for-it -s gcs:4443 -- pytest -n 4"
   gcs:
     image: fsouza/fake-gcs-server
+    entrypoint:
+      - fake-gcs-server
+      - -scheme
+      - http
+      - -external-url
+      - http://gcs:4443
