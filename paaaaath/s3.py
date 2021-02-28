@@ -1,3 +1,4 @@
+import itertools
 import boto3
 from botocore.exceptions import ClientError
 from smart_open import smart_open_lib
@@ -22,6 +23,16 @@ class S3Path(_SkeletonBlobPath, PureS3Path):
     __slots__ = ()
 
     def open(self, *args, **kwargs):
+        kwargs = {
+            **kwargs,
+            "transport_params": {
+                "resource_kwargs": {
+                    "endpoint_url": self._client._endpoint.host,
+                    "aws_access_key_id": "minioadmin",
+                    "aws_secret_access_key": "minioadmin",
+                }
+            },
+        }
         return smart_open_lib.open(str(self), *args, **kwargs)
 
     def touch(self, mode=0x666, exist_ok=True):
@@ -56,24 +67,25 @@ class S3Path(_SkeletonBlobPath, PureS3Path):
         self._client.put_object(Bucket=self.bucket, Key=to_dir_key(self.key))
 
     def iterdir(self):
-        def _get_child(content, base):
-            return content["Key"].lstrip(base).lstrip("/").split("/")[0]
-
-        continuationtoken = ""
+        key = to_dir_key(self.key) if self.key != "" else self.key
+        cur = self._client.list_objects_v2(
+            Bucket=self.bucket, Prefix=key, Delimiter="/"
+        )
         while True:
-            cur = self._client.list_objects_v2(
-                Bucket=self.bucket,
-                Prefix=self.key,
-                ContinuationToken=continuationtoken,
-            )
-            names = (_get_child(c, cur["Prefix"]) for c in cur.get("Contents", []))
-            for name in names:
+            file_names = (c["Key"] for c in cur.get("Contents", []))
+            dir_names = (c["Prefix"] for c in cur.get("CommonPrefixes", []))
+            for name in itertools.chain(dir_names, file_names):
                 if name in {".", "..", ""}:
                     continue
-                yield S3Path(f"{self.anchor}{self.key}/{name}")
+                yield S3Path(f"{self.anchor}/{name}")
             if not cur["IsTruncated"]:
                 break
-            continuationtoken = cur["NextContinuationToken"]
+            cur = self._client.list_objects_v2(
+                Bucket=self.bucket,
+                Prefix=key,
+                Delimiter="/",
+                ContinuationToken=cur["NextContinuationToken"],
+            )
 
     def is_dir(self):
         try:
