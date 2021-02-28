@@ -91,6 +91,7 @@ Project Link: [https://github.com/ar90n/paaaaath](https://github.com/ar90n/paaaa
 ## Acknowledgements
 
 - [smart-open](https://pypi.org/project/smart-open/)
+- [Python Logo](https://ascii.matthewbarber.io/art/python/)
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
