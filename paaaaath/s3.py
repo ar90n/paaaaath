@@ -28,8 +28,6 @@ class S3Path(_SkeletonBlobPath, PureS3Path):
             "transport_params": {
                 "resource_kwargs": {
                     "endpoint_url": self._client._endpoint.host,
-                    "aws_access_key_id": "minioadmin",
-                    "aws_secret_access_key": "minioadmin",
                 }
             },
         }
