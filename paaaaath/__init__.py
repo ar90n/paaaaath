@@ -6,9 +6,6 @@ from .gcs import PureGCSPath, GCSPath
 from .uri import PureUriPath
 from .windows import PureWindowsPath, WindowsPath
 
-from importlib.metadata import version
+from importlib.metadata import version, PackageNotFoundError
 
-try:
-    __version__ = version(__name__)
-except Exception:
-    pass
+__version__ = version(__name__)
