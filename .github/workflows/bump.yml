@@ -17,7 +17,7 @@ jobs:
           git config --local user.name "github-actions[bot]"
       - name: Get branch
         id: get_branch
-        run: echo ::set-output name=BRANCH::${GITHUB_REF/refs\/heads\//}  
+        run: echo ::set-output name=BRANCH::${GITHUB_REF/refs\/heads\//}
       - name: Bump version
         id: bump_version
         run: |
