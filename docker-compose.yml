@@ -1,6 +1,6 @@
-services:
-  paaaaath:
-    image: python:3.8
+version: '3.4'
+
+x-template: &test-template
     volumes:
       - ./:/paaaaath:cached
     working_dir: /paaaaath
@@ -13,6 +13,14 @@ services:
       - gcs
       - s3
     command: sh -c "pip install poetry && poetry install && poetry run wait-for-it -s gcs:4443 -s s3:9000 -- pytest -n 4"
+
+services:
+  test3.8:
+    <<: *test-template
+    image: python:3.8
+  test3.9:
+    <<: *test-template
+    image: python:3.9
   gcs:
     image: fsouza/fake-gcs-server
     entrypoint:
