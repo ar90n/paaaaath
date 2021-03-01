@@ -24,13 +24,18 @@ jobs:
           pip install poetry
           poetry version patch
           poetry version -s
+      - name: Commit pyproject.toml
+        id: commit_pyproject_toml
+        run: |
+          git add pyproject.toml
+          git commit -m 'chore(*): bump version to v${{ VERSION }}'
+        env:
+          VERSION: ${{ github.bump_version.outputs.VERSION }}
       - name: Extract changelog
         id: extract_changelog
         run: |
           changelog=$(git diff -u -U0 HEAD^ CHANGELOG.md | tail -n +6 | sed "s/^\+//")
           echo ::set-output name=CHANGELOG::${changelog//$'\n'/\\n}
-        env:
-          VERSION: ${{ github.bump_version.outputs.VERSION }}
       - name: Push branch
         run: |
           git branch -m bump-${VERSION}
