@@ -28,7 +28,7 @@ jobs:
         id: commit_pyproject_toml
         run: |
           git add pyproject.toml
-          git commit -m 'chore(*): bump version to v${{ VERSION }}'
+          git commit -m "chore(*): bump version to v${VERSION}"
         env:
           VERSION: ${{ github.bump_version.outputs.VERSION }}
       - name: Extract changelog
