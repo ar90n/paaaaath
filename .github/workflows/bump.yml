@@ -61,7 +61,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: 'chore(*): bump ' + process.env.VERSION,
-              head: context.repo.owner + ':' + 'bump-' + process.env.VERSION,
+              head: context.repo.owner + ':' + 'bump-v' + process.env.VERSION,
               base: process.env.BRANCH,
               body: process.env.CHANGELOG.replace(/\\n/g, '\n')
             })
