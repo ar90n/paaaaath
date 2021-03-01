@@ -13,10 +13,12 @@ GCSPath.register_client(
     )
 )
 
+
 def main():
     p = Path("gs://local_test/abc")
     p.write_text("abc")
     assert p.read_text() == "abc"
+
 
 if __name__ == "__main__":
     main()
