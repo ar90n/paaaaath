@@ -21,6 +21,7 @@ jobs:
       - name: Bump version
         id: bump_version
         run: |
+          pip install poetry
           poetry version patch
           poetry version -s
       - name: Extract changelog
