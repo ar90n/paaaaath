@@ -91,6 +91,20 @@ if __name__ == "__main__":
     main()
 ```
 
+## Featuers
+| | HttpPath | S3Path| GCSPath |
+| ------------- | ------------- | ------------- | ------------- |
+| open | ✅ | ✅ | ✅ |
+| read_text | ✅ | ✅ | ✅ |
+| read_byte | ✅ | ✅ | ✅ |
+| write_text | ❌ | ✅ | ✅ |
+| write_byte | ❌ | ✅ | ✅ |
+| iterdir | ❌ | ✅ | ✅ |
+| touch | ❌ | ✅ | ✅ |
+| mkdir | ❌ | ✅ | ✅ |
+| exists | ❌ | ✅ | ✅ |
+
+
 ## Roadmap
 
 See the [open issues](https://github.com/ar90n/paaaaath/issues) for a list of proposed features (and known issues).
