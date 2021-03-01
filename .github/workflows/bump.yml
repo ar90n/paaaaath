@@ -27,7 +27,8 @@ jobs:
         run: |
           pip install poetry
           poetry version patch
-          poetry version -s
+          version=$(poetry version -s)
+          echo ::set-output name=VERSION::${version}
       - name: Commit pyproject.toml
         id: commit_pyproject_toml
         run: |
