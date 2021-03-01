@@ -4,18 +4,16 @@ OUTPUT_BUCKET = ""  # fill output bucket name
 
 
 def main():
-    png_images = []
-    for p in Path("s3://elevation-tiles-prod/normal/10/963").iterdir():
-        if p.suffix != ".png":
+    txts = []
+    for p in Path("gs://gcp-public-data-landsat/LC08/01/044/034/LC08_L1GT_044034_20130330_20170310_01_T2").iterdir():
+        if p.suffix != ".txt":
             continue
 
-        png_images.append(p)
-        if 3 < len(png_images):
-            break
+        txts.append(p)
 
-    for input_path in png_images:
+    for input_path in txts:
         if OUTPUT_BUCKET != "":
-            output_path = Path(f"s3://{OUTPUT_BUCKET}/{input_path.name}")
+            output_path = Path(f"gs://{OUTPUT_BUCKET}/{input_path.name}")
             print(f"upload {output_path.name} to {output_path}")
             output_path.write_bytes(p.read_bytes())
         else:
