@@ -44,8 +44,8 @@ jobs:
           echo ::set-output name=CHANGELOG::${changelog//$'\n'/\\n}
       - name: Push branch
         run: |
-          git branch -m bump-${VERSION}
-          git push -u origin bump-${VERSION}
+          git branch -m bump-v${VERSION}
+          git push -u origin bump-v${VERSION}
         env:
           VERSION: ${{ steps.bump_version.outputs.VERSION }}
       - name: Create pull request
