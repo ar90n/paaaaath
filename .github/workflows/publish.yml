@@ -19,4 +19,6 @@ jobs:
       - name: Publish package
         run: |
           pip install poetry
-          poetry publish --build
+          poetry publish -u ar90n -p ${PYPI_PASSOWRD} -n --build
+        env:
+          PYPI_PASSOWRD: ${{ secrets.PYPI_PASSWORD }}
