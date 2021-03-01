@@ -1,0 +1,56 @@
+name: Bump version
+
+on: [workflow_dispatch]
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Switch branch
+        run: git switch -c tmp
+      - name: Git config
+        run: |
+          git config --local user.email "machineuser+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+      - name: Get branch
+        id: get_branch
+        run: echo ::set-output name=BRANCH::${GITHUB_REF/refs\/heads\//}
+      - name: Bump version
+        id: bump_version
+        run: |
+          poetry version patch
+          poetry version -s
+      - name: Extract changelog
+        id: extract_changelog
+        run: |
+          changelog=$(git diff -u -U0 HEAD^ CHANGELOG.md | tail -n +6 | sed "s/^\+//")
+          echo ::set-output name=CHANGELOG::${changelog//$'\n'/\\n}
+        env:
+          VERSION: ${{ github.bump_version.outputs.VERSION }}
+      - name: Push branch
+        run: |
+          git branch -m bump-${VERSION}
+          git push -u origin bump-${VERSION}
+        env:
+          VERSION: ${{ steps.bump_version.outputs.VERSION }}
+      - name: Create pull request
+        uses: actions/github-script@v2
+        env:
+          BRANCH: ${{ steps.get_branch.outputs.BRANCH }}
+          CHANGELOG: ${{ steps.extract_changelog.outputs.CHANGELOG }}
+          VERSION: ${{ steps.bump_version.outputs.VERSION }}
+        with:
+          #github-token: ${{secrets.GITHUB_TOKEN}}
+          github-token: ${{secrets.PERSONAL_ACCESS_TOKEN}}
+          script: |
+            github.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'chore(*): bump ' + process.env.VERSION,
+              head: context.repo.owner + ':' + 'bump-' + process.env.VERSION,
+              base: process.env.BRANCH,
+              body: process.env.CHANGELOG.replace(/\\n/g, '\n')
+            })
