@@ -3,7 +3,7 @@
 name: CI
 
 # Controls when the action will run.
-on: 
+on:
   push:
     branches-ignore:
       - 'bump-v*'
