@@ -22,4 +22,3 @@ jobs:
           poetry publish -u ar90n -p ${PYPI_PASSOWRD} -n --build
         env:
           PYPI_PASSOWRD: ${{ secrets.PYPI_PASSWORD }}
-
