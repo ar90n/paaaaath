@@ -1,8 +1,14 @@
+[![Build][build-shiled]][build-url]
+[![Version][version-shield]][version-url]
+[![Downloads][download-shield]][download-url]
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
+
+
+
 
 ## About The Project
 
@@ -137,6 +143,12 @@ Project Link: [https://github.com/ar90n/paaaaath](https://github.com/ar90n/paaaa
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
+[download-shield]: https://img.shields.io/pypi/dm/paaaaath?style=for-the-badge
+[download-url]: https://img.shields.io/pypi/dm/paaaaath
+[version-shield]: https://img.shields.io/pypi/v/paaaaath?style=for-the-badge
+[version-url]: https://img.shields.io/pypi/dm/paaaaath
+[build-shiled]: https://img.shields.io/github/workflow/status/ar90n/paaaaath/CI?style=for-the-badge
+[build-url]: https://github.com/ar90n/paaaaath/actions/workflows/ci.yml
 [contributors-shield]: https://img.shields.io/github/contributors/ar90n/paaaaath.svg?style=for-the-badge
 [contributors-url]: https://github.com/ar90n/paaaaath/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/ar90n/paaaaath.svg?style=for-the-badge
