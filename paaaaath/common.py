@@ -14,7 +14,6 @@ class PurePath(pathlib.PurePath):
         cls._uri_cls_repository.append(concrete_cls)
         return concrete_cls
 
-
     @classmethod
     def _create_uri_path(cls, args, base_cls):
         if cls is not base_cls:
@@ -29,6 +28,7 @@ class PurePath(pathlib.PurePath):
                 pass
 
         return cls._get_default_path_cls()._from_parts(args)
+
     @classmethod
     def _get_default_path_cls(cls):
         from .windows import PureWindowsPath
