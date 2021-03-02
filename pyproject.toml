@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "paaaaath"
-version = "0.1.6"
+version = "0.2.0"
 description = "a useful alternative Path object"
 authors = ["Masahiro Wada <argon.argon.argon@gmail.com>"]
 license = "MIT"
