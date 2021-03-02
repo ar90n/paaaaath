@@ -1,7 +1,13 @@
 # from https://dev.to/puku0x/github-actions-1mi5
 name: Bump version
 
-on: [workflow_dispatch]
+on:
+ workflow_dispatch:
+  inputs:
+    bumpTarget:
+      description: 'bump target major/minor/patch'
+      required: true
+      default: 'patch'
 
 jobs:
   bump:
@@ -27,7 +33,7 @@ jobs:
         id: bump_version
         run: |
           pip install poetry
-          poetry version patch
+          poetry version ${{ github.event.inputs.bumpTarget }}
           version=$(poetry version -s)
           echo ::set-output name=VERSION::${version}
       - name: Commit pyproject.toml
