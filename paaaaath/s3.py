@@ -5,7 +5,7 @@ from smart_open import smart_open_lib
 
 from .blob import to_file_key, to_dir_key, PureBlobPath, _SkeletonBlobPath
 from .uri import _UriFlavour
-from .common import PurePath
+from .common import PurePath, Path
 
 
 class _S3Flavour(_UriFlavour):
@@ -21,6 +21,7 @@ class PureS3Path(PureBlobPath):
     __slots__ = ()
 
 
+@Path.register
 class S3Path(_SkeletonBlobPath, PureS3Path):
     __slots__ = ()
 

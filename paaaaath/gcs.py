@@ -5,7 +5,7 @@ from google.api_core.exceptions import NotFound
 
 from .blob import _SkeletonBlobPath, PureBlobPath, to_dir_key, to_file_key
 from .uri import _UriFlavour
-from .common import PurePath
+from .common import PurePath, Path
 
 
 class _GCSFlavour(_UriFlavour):
@@ -21,6 +21,7 @@ class PureGCSPath(PureBlobPath):
     _flavour = _gcs_flavour
 
 
+@Path.register
 class GCSPath(_SkeletonBlobPath, PureGCSPath):
     __slots__ = ()
 

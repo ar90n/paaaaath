@@ -2,34 +2,39 @@ import sys
 import os
 import pathlib
 
+
 class PurePath(pathlib.PurePath):
-    _cls_repository = []
+    _uri_cls_repository = []
 
     def __new__(cls, *args):
-        if cls is not PurePath:
-            return cls._from_parts(args)
-
-        for concrete_cls in reversed(cls._cls_repository):
-            try:
-                obj = concrete_cls._from_parts(args)
-                if hasattr(obj._flavour, "schemes") and obj._drv == "":
-                    continue
-                return obj
-            except ValueError:
-                pass
-
-        return cls._get_path_cls()._from_parts(args)
+        return cls._create_uri_path(args, PurePath)
 
     @classmethod
     def register(cls, concrete_cls):
-        cls._cls_repository.append(concrete_cls)
+        cls._uri_cls_repository.append(concrete_cls)
         return concrete_cls
 
+
     @classmethod
-    def _get_path_cls(cls):
-        from .windows import WindowsPath
-        from .posix import PosixPath
-        return WindowsPath if os.name == "nt" else PosixPath
+    def _create_uri_path(cls, args, base_cls):
+        if cls is not base_cls:
+            return cls._from_parts(args)
+
+        for concrete_cls in reversed(cls._uri_cls_repository):
+            try:
+                self = concrete_cls._from_parts(args)
+                if self._drv != "":
+                    return self
+            except ValueError:
+                pass
+
+        return cls._get_default_path_cls()._from_parts(args)
+    @classmethod
+    def _get_default_path_cls(cls):
+        from .windows import PureWindowsPath
+        from .posix import PurePosixPath
+
+        return PureWindowsPath if os.name == "nt" else PurePosixPath
 
 
 if sys.version_info < (3, 9):
@@ -50,46 +55,24 @@ if sys.version_info < (3, 9):
 
 
 class Path(PurePath, pathlib.Path):
+    _uri_cls_repository = []
+
     def __new__(cls, *args, **kwargs):
-        cls = cls.get_concrete_cls(*args)
-        self = cls._from_parts(args, init=False)
+        self = cls._create_uri_path(args, Path)
         if not self._flavour.is_supported:
             raise NotImplementedError(
                 "cannot instantiate %r on your system" % (cls.__name__,)
             )
+
         self._init()
         return self
 
     @classmethod
-    def get_concrete_cls(cls, *args):
-        if cls is not Path:
-            return cls
-
-        if 0 < len(args) and (
-            args[0].startswith("http://") or args[0].startswith("https://")
-        ):
-            from .http import HttpPath
-
-            return HttpPath
-
-        if 0 < len(args) and args[0].startswith("s3://"):
-            from .s3 import S3Path
-
-            return S3Path
-
-        if 0 < len(args) and args[0].startswith("gs://"):
-            from .gcs import GCSPath
-
-            return GCSPath
-
-        if os.name == "nt":
-            from .windows import WindowsPath
-
-            return WindowsPath
-
+    def _get_default_path_cls(cls):
+        from .windows import WindowsPath
         from .posix import PosixPath
 
-        return PosixPath
+        return WindowsPath if os.name == "nt" else PosixPath
 
 
 class _SkeletonAccessor(pathlib._Accessor):  # type: ignore
