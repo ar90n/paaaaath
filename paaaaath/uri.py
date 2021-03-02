@@ -66,6 +66,7 @@ class _UriFlavour(pathlib._Flavour):  # type: ignore
 _uri_flavour = _UriFlavour()
 
 
+@PurePath.register
 class PureUriPath(PurePath):
     _flavour = _uri_flavour
     __slots__ = ()
