@@ -1,10 +1,11 @@
 import sys
 import os
 import pathlib
+from typing import List
 
 
 class PurePath(pathlib.PurePath):
-    _uri_cls_repository = []
+    _uri_cls_repository: "List[PurePath]" = []
 
     def __new__(cls, *args):
         return cls._create_uri_path(args, PurePath)
@@ -55,7 +56,7 @@ if sys.version_info < (3, 9):
 
 
 class Path(PurePath, pathlib.Path):
-    _uri_cls_repository = []
+    _uri_cls_repository: "List[PurePath]" = []
 
     def __new__(cls, *args, **kwargs):
         self = cls._create_uri_path(args, Path)
