@@ -2,7 +2,6 @@ import pathlib
 
 from .common import Path, PurePath
 
-
 class PureWindowsPath(PurePath, pathlib.PureWindowsPath):
     __slots__ = ()
 

@@ -2,46 +2,34 @@ import sys
 import os
 import pathlib
 
-
-def _f(f):
-    return None
-
-
 class PurePath(pathlib.PurePath):
+    _cls_repository = []
+
     def __new__(cls, *args):
-        cls = cls.get_concrete_cls(*args)
-        return cls._from_parts(args)
+        if cls is not PurePath:
+            return cls._from_parts(args)
+
+        for concrete_cls in reversed(cls._cls_repository):
+            try:
+                obj = concrete_cls._from_parts(args)
+                if hasattr(obj._flavour, "schemes") and obj._drv == "":
+                    continue
+                return obj
+            except ValueError:
+                pass
+
+        return cls._get_path_cls()._from_parts(args)
 
     @classmethod
-    def get_concrete_cls(cls, *args):
-        if cls is not PurePath:
-            return cls
+    def register(cls, concrete_cls):
+        cls._cls_repository.append(concrete_cls)
+        return concrete_cls
 
-        if 0 < len(args) and (
-            args[0].startswith("http://") or args[0].startswith("https://")
-        ):
-            from .http import PureHttpPath
-
-            return PureHttpPath
-
-        if 0 < len(args) and args[0].startswith("s3://"):
-            from .s3 import PureS3Path
-
-            return PureS3Path
-
-        if 0 < len(args) and args[0].startswith("gs://"):
-            from .gcs import PureGCSPath
-
-            return PureGCSPath
-
-        if os.name == "nt":
-            from .windows import PureWindowsPath
-
-            return PureWindowsPath
-
-        from .posix import PurePosixPath
-
-        return PurePosixPath
+    @classmethod
+    def _get_path_cls(cls):
+        from .windows import WindowsPath
+        from .posix import PosixPath
+        return WindowsPath if os.name == "nt" else PosixPath
 
 
 if sys.version_info < (3, 9):
