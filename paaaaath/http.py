@@ -18,7 +18,7 @@ class _HttpFlavour(_UriFlavour):
 _http_flavour = _HttpFlavour()
 
 
-@PurePath.register
+@PurePath.register()
 class PureHttpPath(PurePath):
     _flavour = _http_flavour
     __slots__ = ()

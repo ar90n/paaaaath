@@ -782,7 +782,7 @@ def test_pickling(pure_path_cls):
     ["left_hand", "right_hand", "expect"],
     [("/a/b/b", "A/b", False), ("/a", "///a", True), ("/a", "//a", True)],
 )
-def test_eq(pure_path_cls, left_hand, right_hand, expect):
+def test_eq2(pure_path_cls, left_hand, right_hand, expect):
     assert (pure_path_cls(left_hand) == pure_path_cls(right_hand)) == expect
 
 

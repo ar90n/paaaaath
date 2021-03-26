@@ -23,7 +23,7 @@ class _GCSFlavour(_UriFlavour):
 _gcs_flavour = _GCSFlavour()
 
 
-@PurePath.register
+@PurePath.register()
 class PureGCSPath(PureBlobPath):
     __slots__ = ()
     _flavour = _gcs_flavour

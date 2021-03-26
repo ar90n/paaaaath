@@ -8,7 +8,7 @@ from dataclasses import dataclass
 @dataclass
 class RegisteredPurePathClass:
     missing: bool
-    cls: "PurePath"
+    cls: Type["PurePath"]
 
 
 class PurePath(pathlib.PurePath):
@@ -18,9 +18,15 @@ class PurePath(pathlib.PurePath):
         return cls._create_uri_path(args, PurePath)
 
     @classmethod
-    def register(cls, concrete_cls: "PurePath") -> "PurePath":
-        cls._uri_cls_repository.append(RegisteredPurePathClass(False, concrete_cls))
-        return concrete_cls
+    def register(cls, missing_deps: bool=False) -> Callable[[Type["PurePath"]], Type["PurePath"]]:
+        def _f(concrete_cls: Type[PurePath]) -> Type[PurePath]:
+            cls._uri_cls_repository.append(
+                RegisteredPurePathClass(missing_deps, concrete_cls)
+            )
+            return concrete_cls
+
+        return _f
+
 
     @classmethod
     def _create_uri_path(cls, args, base_cls):
@@ -74,16 +80,6 @@ class Path(PurePath, pathlib.Path):
 
         self._init()
         return self
-
-    @classmethod
-    def register(cls, missing_deps: bool) -> Callable[[PurePath], None]:
-        def _f(concrete_cls: PurePath) -> PurePath:
-            cls._uri_cls_repository.append(
-                RegisteredPurePathClass(missing_deps, concrete_cls)
-            )
-            return concrete_cls
-
-        return _f
 
     @classmethod
     def _get_default_path_cls(cls):

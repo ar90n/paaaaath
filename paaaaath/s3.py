@@ -21,7 +21,7 @@ class _S3Flavour(_UriFlavour):
 _s3_flavour = _S3Flavour()
 
 
-@PurePath.register
+@PurePath.register()
 class PureS3Path(PureBlobPath):
     _flavour = _s3_flavour
     __slots__ = ()
