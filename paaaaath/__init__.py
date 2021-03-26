@@ -9,6 +9,6 @@ from .windows import PureWindowsPath, WindowsPath
 try:
     from importlib.metadata import version, PackageNotFoundError
 except ImportError:
-    from importlib_metadata import version, PackageNotFoundError # type: ignore 
+    from importlib_metadata import version, PackageNotFoundError  # type: ignore
 
 __version__ = version(__name__)
