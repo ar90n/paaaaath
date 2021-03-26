@@ -1,7 +1,6 @@
-import io
 import collections
+import io
 import time
-
 
 import pytest
 from paaaaath import GCSPath

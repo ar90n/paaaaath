@@ -1,4 +1,5 @@
 import itertools
+
 from smart_open import smart_open_lib
 
 try:
@@ -9,9 +10,9 @@ except ImportError:
 else:
     MISSING_DEPS = False
 
-from .blob import to_file_key, to_dir_key, PureBlobPath, _SkeletonBlobPath
-from .uri import _UriFlavour
-from .common import PurePath, Path
+from paaaaath.blob import PureBlobPath, _SkeletonBlobPath, to_dir_key, to_file_key
+from paaaaath.common import Path, PurePath
+from paaaaath.uri import _UriFlavour
 
 
 class _S3Flavour(_UriFlavour):

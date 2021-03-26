@@ -1,19 +1,18 @@
-from paaaaath.s3 import MISSING_DEPS
 from smart_open import smart_open_lib
 from smart_open.constants import WRITE_BINARY
 
 try:
-    from smart_open import gcs
-    from google.cloud import storage
     from google.api_core.exceptions import NotFound
+    from google.cloud import storage
+    from smart_open import gcs
 except ImportError:
     MISSING_DEPS = True
 else:
     MISSING_DEPS = False
 
-from .blob import _SkeletonBlobPath, PureBlobPath, to_dir_key, to_file_key
-from .uri import _UriFlavour
-from .common import PurePath, Path
+from paaaaath.blob import PureBlobPath, _SkeletonBlobPath, to_dir_key, to_file_key
+from paaaaath.common import Path, PurePath
+from paaaaath.uri import _UriFlavour
 
 
 class _GCSFlavour(_UriFlavour):
@@ -75,8 +74,8 @@ class GCSPath(_SkeletonBlobPath, PureGCSPath):
             if blob.name in {".", "..", prefix}:
                 continue
             yield GCSPath(f"{self.anchor}/{blob.name}")
-        for prefix in blobs.prefixes:
-            yield GCSPath(f"{self.anchor}/{prefix}")
+        for blob_prefix in blobs.prefixes:
+            yield GCSPath(f"{self.anchor}/{blob_prefix}")
 
     def is_dir(self):
         dir_key = to_dir_key(self.key)
@@ -91,6 +90,6 @@ class GCSPath(_SkeletonBlobPath, PureGCSPath):
 
         return self._client.get_bucket(self.bucket).get_blob(key) is not None
 
-    @staticmethod
-    def _create_client():
+    @classmethod
+    def _create_client(cls):
         return storage.Client()

@@ -1,12 +1,12 @@
 import fnmatch
 import pathlib
 import posixpath
-from typing import List
 import re
 from os import fsencode
+from typing import List
 from urllib.parse import quote_from_bytes, urlparse
 
-from .common import PurePath
+from paaaaath.common import PurePath
 
 
 class _UriFlavour(pathlib._Flavour):  # type: ignore
@@ -28,14 +28,12 @@ class _UriFlavour(pathlib._Flavour):  # type: ignore
             path = f"{sep}{netloc}{sep}{path}".rstrip(sep)
             netloc = ""
 
-        drv = f"{scheme}://{netloc}" if scheme != "" else ""
+        drv = "" if scheme == "" else f"{scheme}://{netloc}"
         part = path.lstrip("/")
         root = sep if drv != "" or path != part else ""
 
-        if drv != "" and (
-            0 < len(self.schemes)
-            and not any((drv.startswith(f"{s}://") for s in self.schemes))
-        ):
+        has_unknown_scheme = not any(drv.startswith(f"{s}://") for s in self.schemes)
+        if drv != "" and (0 < len(self.schemes) and has_unknown_scheme):
             raise ValueError(f"http and https are only supported. but {drv} was given.")
         return drv, root, part
 

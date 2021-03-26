@@ -3,7 +3,6 @@ import io
 import time
 
 import pytest
-
 from paaaaath import S3Path
 
 

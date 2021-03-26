@@ -1,6 +1,6 @@
 import pathlib
 
-from .common import Path, PurePath
+from paaaaath.common import Path, PurePath
 
 
 class PureWindowsPath(PurePath, pathlib.PureWindowsPath):

@@ -1,4 +1,4 @@
-from .common import _SkeletonPath, PurePath
+from paaaaath.common import PurePath, _SkeletonPath
 
 
 def to_file_key(key: str) -> str:

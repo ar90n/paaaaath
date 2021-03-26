@@ -1,15 +1,13 @@
-from abc import ABC
 import os
-
 import random
+from abc import ABC
+
 import boto3
-from botocore.client import Config
+import paaaaath
 import pytest
+from botocore.client import Config
 from google.auth.credentials import AnonymousCredentials
 from google.cloud import storage
-
-
-import paaaaath
 
 
 class Bucket(ABC):
