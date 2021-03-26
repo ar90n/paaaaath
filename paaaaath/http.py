@@ -1,5 +1,11 @@
 from smart_open import smart_open_lib
-from requests.exceptions import HTTPError
+
+try:
+    from requests.exceptions import HTTPError
+except ImportError:
+    MISSING_DEPS = True
+else:
+    MISSING_DEPS = False
 
 from .common import PurePath, Path, _SkeletonPath
 from .uri import _UriFlavour
@@ -12,13 +18,13 @@ class _HttpFlavour(_UriFlavour):
 _http_flavour = _HttpFlavour()
 
 
-@PurePath.register
+@PurePath.register()
 class PureHttpPath(PurePath):
     _flavour = _http_flavour
     __slots__ = ()
 
 
-@Path.register
+@Path.register(MISSING_DEPS)
 class HttpPath(_SkeletonPath, PureHttpPath):
     __slots__ = ()
 

@@ -1,7 +1,15 @@
-from google.cloud import storage
-from smart_open import smart_open_lib, gcs
+from paaaaath.s3 import MISSING_DEPS
+from smart_open import smart_open_lib
 from smart_open.constants import WRITE_BINARY
-from google.api_core.exceptions import NotFound
+
+try:
+    from smart_open import gcs
+    from google.cloud import storage
+    from google.api_core.exceptions import NotFound
+except ImportError:
+    MISSING_DEPS = True
+else:
+    MISSING_DEPS = False
 
 from .blob import _SkeletonBlobPath, PureBlobPath, to_dir_key, to_file_key
 from .uri import _UriFlavour
@@ -15,13 +23,13 @@ class _GCSFlavour(_UriFlavour):
 _gcs_flavour = _GCSFlavour()
 
 
-@PurePath.register
+@PurePath.register()
 class PureGCSPath(PureBlobPath):
     __slots__ = ()
     _flavour = _gcs_flavour
 
 
-@Path.register
+@Path.register(MISSING_DEPS)
 class GCSPath(_SkeletonBlobPath, PureGCSPath):
     __slots__ = ()
 

@@ -5,7 +5,6 @@ import random
 import boto3
 from botocore.client import Config
 import pytest
-from moto import mock_s3
 from google.auth.credentials import AnonymousCredentials
 from google.cloud import storage
 

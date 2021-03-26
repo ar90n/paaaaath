@@ -1,29 +1,43 @@
 import sys
 import os
 import pathlib
-from typing import List
+from typing import List, Callable, Generic, Type, TypeVar, Any
+from dataclasses import dataclass
+
+
+@dataclass
+class RegisteredPurePathClass:
+    missing: bool
+    cls: Type["PurePath"]
 
 
 class PurePath(pathlib.PurePath):
-    _uri_cls_repository: "List[PurePath]" = []
+    _uri_cls_repository: List[RegisteredPurePathClass] = []
 
     def __new__(cls, *args):
         return cls._create_uri_path(args, PurePath)
 
     @classmethod
-    def register(cls, concrete_cls):
-        cls._uri_cls_repository.append(concrete_cls)
-        return concrete_cls
+    def register(
+        cls, missing_deps: bool = False
+    ) -> Callable[[Type["PurePath"]], Type["PurePath"]]:
+        def _f(concrete_cls: Type[PurePath]) -> Type[PurePath]:
+            cls._uri_cls_repository.append(
+                RegisteredPurePathClass(missing_deps, concrete_cls)
+            )
+            return concrete_cls
+
+        return _f
 
     @classmethod
     def _create_uri_path(cls, args, base_cls):
         if cls is not base_cls:
             return cls._from_parts(args)
 
-        for concrete_cls in reversed(cls._uri_cls_repository):
+        for registered_cls in reversed(cls._uri_cls_repository):
             try:
-                self = concrete_cls._from_parts(args)
-                if self._drv != "":
+                self = registered_cls.cls._from_parts(args)
+                if self._drv != "" and not registered_cls.missing:
                     return self
             except ValueError:
                 pass
@@ -56,7 +70,7 @@ if sys.version_info < (3, 9):
 
 
 class Path(PurePath, pathlib.Path):
-    _uri_cls_repository: "List[PurePath]" = []
+    _uri_cls_repository: List[RegisteredPurePathClass] = []
 
     def __new__(cls, *args, **kwargs):
         self = cls._create_uri_path(args, Path)
