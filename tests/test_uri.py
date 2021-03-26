@@ -1,5 +1,4 @@
 import pytest
-
 from paaaaath.uri import PureUriPath, _uri_flavour
 
 

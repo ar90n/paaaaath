@@ -1,9 +1,8 @@
 import os
 import pickle
 
-import pytest
-
 import paaaaath
+import pytest
 from paaaaath import (
     HttpPath,
     Path,

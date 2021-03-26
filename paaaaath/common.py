@@ -1,8 +1,8 @@
-import sys
 import os
 import pathlib
-from typing import List, Callable, Generic, Type, TypeVar, Any
+import sys
 from dataclasses import dataclass
+from typing import Any, Callable, List, Type, cast
 
 
 @dataclass
@@ -14,12 +14,12 @@ class RegisteredPurePathClass:
 class PurePath(pathlib.PurePath):
     _uri_cls_repository: List[RegisteredPurePathClass] = []
 
-    def __new__(cls, *args):
+    def __new__(cls: Type["PurePath"], *args) -> "PurePath":
         return cls._create_uri_path(args, PurePath)
 
     @classmethod
     def register(
-        cls, missing_deps: bool = False
+        cls: Type["PurePath"], missing_deps: bool = False
     ) -> Callable[[Type["PurePath"]], Type["PurePath"]]:
         def _f(concrete_cls: Type[PurePath]) -> Type[PurePath]:
             cls._uri_cls_repository.append(
@@ -30,24 +30,24 @@ class PurePath(pathlib.PurePath):
         return _f
 
     @classmethod
-    def _create_uri_path(cls, args, base_cls):
+    def _create_uri_path(cls: Type["PurePath"], args, base_cls) -> "PurePath":
         if cls is not base_cls:
-            return cls._from_parts(args)
+            return cls._from_parts(args)  # type: ignore
 
         for registered_cls in reversed(cls._uri_cls_repository):
             try:
-                self = registered_cls.cls._from_parts(args)
+                self = registered_cls.cls._from_parts(args)  # type: ignore
                 if self._drv != "" and not registered_cls.missing:
                     return self
             except ValueError:
                 pass
 
-        return cls._get_default_path_cls()._from_parts(args)
+        return cls._get_default_path_cls()._from_parts(args)  # type: ignore
 
     @classmethod
-    def _get_default_path_cls(cls):
-        from .windows import PureWindowsPath
-        from .posix import PurePosixPath
+    def _get_default_path_cls(cls: Type["PurePath"]) -> Type["PurePath"]:
+        from paaaaath.posix import PurePosixPath
+        from paaaaath.windows import PureWindowsPath
 
         return PureWindowsPath if os.name == "nt" else PurePosixPath
 
@@ -72,95 +72,95 @@ if sys.version_info < (3, 9):
 class Path(PurePath, pathlib.Path):
     _uri_cls_repository: List[RegisteredPurePathClass] = []
 
-    def __new__(cls, *args, **kwargs):
-        self = cls._create_uri_path(args, Path)
-        if not self._flavour.is_supported:
+    def __new__(cls: Type["Path"], *args, **kwargs) -> "Path":
+        self = cast(Path, cls._create_uri_path(args, Path))
+        if not self._flavour.is_supported:  # type: ignore
             raise NotImplementedError(
                 "cannot instantiate %r on your system" % (cls.__name__,)
             )
 
-        self._init()
+        self._init()  # type: ignore
         return self
 
     @classmethod
-    def _get_default_path_cls(cls):
-        from .windows import WindowsPath
-        from .posix import PosixPath
+    def _get_default_path_cls(cls: Type["Path"]) -> Type["Path"]:
+        from paaaaath.posix import PosixPath
+        from paaaaath.windows import WindowsPath
 
         return WindowsPath if os.name == "nt" else PosixPath
 
 
 class _SkeletonAccessor(pathlib._Accessor):  # type: ignore
-    @staticmethod
-    def utime(*args, **kwargs):
+    @classmethod
+    def utime(cls, *args, **kwargs):
         raise NotImplementedError("utime() not available on this system")
 
-    @staticmethod
-    def open(*args, **kwargs):
+    @classmethod
+    def open(cls, *args, **kwargs):
         raise NotImplementedError("open() not available on this system")
 
-    @staticmethod
-    def stat(*args, **kwargs):
+    @classmethod
+    def stat(cls, *args, **kwargs):
         raise NotImplementedError("stat() not available on this system")
 
-    @staticmethod
-    def lstat(*args, **kwargs):
+    @classmethod
+    def lstat(cls, *args, **kwargs):
         raise NotImplementedError("lstat() not available on this system")
 
-    @staticmethod
-    def listdir(*args, **kwargs):
+    @classmethod
+    def listdir(cls, *args, **kwargs):
         raise NotImplementedError("listdir() not available on this system")
 
-    @staticmethod
-    def scandir(*args, **kwargs):
+    @classmethod
+    def scandir(cls, *args, **kwargs):
         raise NotImplementedError("scandir() not available on this system")
 
-    @staticmethod
-    def chmod(*args, **kwargs):
+    @classmethod
+    def chmod(cls, *args, **kwargs):
         raise NotImplementedError("chmod() not available on this system")
 
-    @staticmethod
-    def lchmod(*args, **kwargs):
+    @classmethod
+    def lchmod(cls, *args, **kwargs):
         raise NotImplementedError("lchmod() not available on this system")
 
-    @staticmethod
-    def mkdir(*args, **kwargs):
+    @classmethod
+    def mkdir(cls, *args, **kwargs):
         raise NotImplementedError("mkdir() not available on this system")
 
-    @staticmethod
-    def unlink(*args, **kwargs):
+    @classmethod
+    def unlink(cls, *args, **kwargs):
         raise NotImplementedError("unlink() not available on this system")
 
-    @staticmethod
-    def link_to(*args, **kwargs):
+    @classmethod
+    def link_to(cls, *args, **kwargs):
         raise NotImplementedError("link_to() not available on this system")
 
-    @staticmethod
-    def rmdir(*args, **kwargs):
+    @classmethod
+    def rmdir(cls, *args, **kwargs):
         raise NotImplementedError("rmdir() not available on this system")
 
-    @staticmethod
-    def rename(*args, **kwargs):
+    @classmethod
+    def rename(cls, *args, **kwargs):
         raise NotImplementedError("rename() not available on this system")
 
-    @staticmethod
-    def replace(*args, **kwargs):
+    @classmethod
+    def replace(cls, *args, **kwargs):
         raise NotImplementedError("replace() not available on this system")
 
-    @staticmethod
-    def symlink(*args, **kwargs):
+    @classmethod
+    def symlink(cls, *args, **kwargs):
         raise NotImplementedError("symlink() not available on this system")
 
-    @staticmethod
-    def readlink(*args, **kwargs):
+    @classmethod
+    def readlink(cls, *args, **kwargs):
         raise NotImplementedError("readlink() is unsupported on this system")
 
-    @staticmethod
-    def owner(*args, **kwargs):
+    @classmethod
+    def owner(cls, *args, **kwargs):
         raise NotImplementedError("owner() is unsupported on this system")
 
-    @staticmethod
-    def group(*args, **kwargs):
+    @classmethod
+    def group(cls, *args, **kwargs):
         raise NotImplementedError("group() is unsupported on this system")
 
 

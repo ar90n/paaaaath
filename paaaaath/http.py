@@ -7,8 +7,8 @@ except ImportError:
 else:
     MISSING_DEPS = False
 
-from .common import PurePath, Path, _SkeletonPath
-from .uri import _UriFlavour
+from paaaaath.common import Path, PurePath, _SkeletonPath
+from paaaaath.uri import _UriFlavour
 
 
 class _HttpFlavour(_UriFlavour):

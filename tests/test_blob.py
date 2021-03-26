@@ -1,7 +1,6 @@
 import pytest
-
-from paaaaath.s3 import _s3_flavour, PureS3Path, S3Path
-from paaaaath.gcs import _gcs_flavour, PureGCSPath, GCSPath
+from paaaaath.gcs import GCSPath, PureGCSPath, _gcs_flavour
+from paaaaath.s3 import PureS3Path, S3Path, _s3_flavour
 
 
 @pytest.mark.parametrize(

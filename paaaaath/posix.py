@@ -1,6 +1,6 @@
 import pathlib
 
-from .common import Path, PurePath
+from paaaaath.common import Path, PurePath
 
 
 class PurePosixPath(PurePath, pathlib.PurePosixPath):
