@@ -18,7 +18,9 @@ class PurePath(pathlib.PurePath):
         return cls._create_uri_path(args, PurePath)
 
     @classmethod
-    def register(cls, missing_deps: bool=False) -> Callable[[Type["PurePath"]], Type["PurePath"]]:
+    def register(
+        cls, missing_deps: bool = False
+    ) -> Callable[[Type["PurePath"]], Type["PurePath"]]:
         def _f(concrete_cls: Type[PurePath]) -> Type[PurePath]:
             cls._uri_cls_repository.append(
                 RegisteredPurePathClass(missing_deps, concrete_cls)
@@ -26,7 +28,6 @@ class PurePath(pathlib.PurePath):
             return concrete_cls
 
         return _f
-
 
     @classmethod
     def _create_uri_path(cls, args, base_cls):
