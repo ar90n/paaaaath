@@ -23,6 +23,7 @@ class PureHttpPath(PurePath):
     _flavour = _http_flavour
     __slots__ = ()
 
+
 @Path.register(MISSING_DEPS)
 class HttpPath(_SkeletonPath, PureHttpPath):
     __slots__ = ()
