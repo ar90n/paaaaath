@@ -15,6 +15,9 @@ x-template: &test-template
     command: sh -c "pip install poetry && poetry install && poetry run wait-for-it -s gcs:4443 -s s3:9000 -- pytest -n 4"
 
 services:
+  test3.7:
+    <<: *test-template
+    image: python:3.7
   test3.8:
     <<: *test-template
     image: python:3.8
