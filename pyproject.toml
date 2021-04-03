@@ -11,7 +11,6 @@ keywords = ["path", "s3", "gcs", "cloud"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-lambdas = "^0.1.0"
 smart-open = "^4.2"
 
 # optional
@@ -40,14 +39,14 @@ wait-for-it = "^2.2.0"
 boto3 = "^1.17.36"
 google-cloud-storage = "^1.36.2"
 requests = "^2.25.1"
-pysen = "^0.9.0"
+pysen = "^0.9.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pysen]
-version = "0.9"
+version = "0.9.1"
 
 [tool.pysen.lint]
 enable_black = true
