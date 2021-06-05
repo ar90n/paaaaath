@@ -41,6 +41,7 @@ google-cloud-storage = "^1.36.2"
 requests = "^2.25.1"
 pysen = "^0.9.1"
 auto-changelog = "^0.5.3"
+conventional-commit = "^0.4.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
