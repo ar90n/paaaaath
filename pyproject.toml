@@ -23,7 +23,7 @@ importlib_metadata = {version = "^3.7", python = "~3.7"}
 http = [ "requests"]
 gcs = [ "google-cloud-storage"]
 s3 = [ "boto3"]
-all = *
+all = ["requests", "google-cloud-storage", "boto3"]
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.2"
