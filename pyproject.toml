@@ -11,7 +11,7 @@ keywords = ["path", "s3", "gcs", "cloud"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-smart-open = "^4.2"
+smart-open = "^5.0"
 
 # optional
 boto3 = {version = "^1.17.36", optional = true}
