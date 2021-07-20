@@ -33,14 +33,7 @@ class S3Path(_SkeletonBlobPath, PureS3Path):
     __slots__ = ()
 
     def open(self, *args, **kwargs):
-        kwargs = {
-            **kwargs,
-            "transport_params": {
-                "resource_kwargs": {
-                    "endpoint_url": self._client._endpoint.host,
-                }
-            },
-        }
+        kwargs = {**kwargs, "transport_params": {"client": self._client}}
         return smart_open_lib.open(str(self), *args, **kwargs)
 
     def touch(self, mode=0x666, exist_ok=True):
