@@ -76,7 +76,7 @@ class S3Path(_SkeletonBlobPath, PureS3Path):
             file_names = (c["Key"] for c in cur.get("Contents", []))
             dir_names = (c["Prefix"] for c in cur.get("CommonPrefixes", []))
             for name in itertools.chain(dir_names, file_names):
-                if name in {".", "..", ""}:
+                if name in {".", "..", "", key}:
                     continue
                 yield S3Path(f"{self.anchor}/{name}")
             if not cur["IsTruncated"]:
