@@ -76,7 +76,7 @@ def test_iterdir(s3bucket, keys, root, expect):
     for k in keys:
         s3bucket.put(k)
     it = S3Path(f"{s3bucket.root}/{root}").iterdir()
-    assert isinstance(it, collections.Iterable)
+    assert isinstance(it, collections.abc.Iterable)
     assert set(it) == {S3Path(f"{s3bucket.root}/{p}") for p in expect}
 
 

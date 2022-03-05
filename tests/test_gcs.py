@@ -76,7 +76,7 @@ def test_iterdir(gcsbucket, keys, root, expect):
     for k in keys:
         gcsbucket.put(k)
     it = GCSPath(f"{gcsbucket.root}/{root}").iterdir()
-    assert isinstance(it, collections.Iterable)
+    assert isinstance(it, collections.abc.Iterable)
     assert set(it) == {GCSPath(f"{gcsbucket.root}/{p}") for p in expect}
 
 
