@@ -69,6 +69,8 @@ def test_read_write_bytes(gcsbucket, expect):
         (("a", "b/b", "b/c", "c/d"), "/b", {"b/b", "b/c"}),
         (("a", "b/b", "b/c", "c/d/e", "c/f/g"), "/c", {"c/d", "c/f"}),
         (("a/", "b/b", "b/c", "c/d"), "/a", {}),
+        (("a/b/", "b/b", "b/c", "c/d"), "a/b", {}),
+        (("a/b/", "b/b", "b/c", "c/d"), "/a/b", {}),
         ([str(i) for i in range(1024)], "/", {str(i) for i in range(1024)}),
     ],
 )
@@ -76,7 +78,7 @@ def test_iterdir(gcsbucket, keys, root, expect):
     for k in keys:
         gcsbucket.put(k)
     it = GCSPath(f"{gcsbucket.root}/{root}").iterdir()
-    assert isinstance(it, collections.Iterable)
+    assert isinstance(it, collections.abc.Iterable)
     assert set(it) == {GCSPath(f"{gcsbucket.root}/{p}") for p in expect}
 
 
