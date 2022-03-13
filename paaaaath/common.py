@@ -167,6 +167,7 @@ class _SkeletonAccessor(pathlib._Accessor):  # type: ignore
     @staticmethod
     def realpath(path, *args, **kwargs):
         import posixpath
+
         return f"{path.drive}{path.root}{posixpath.normpath(path._flavour.join(path.parts[1:]))}"
 
 
@@ -202,7 +203,7 @@ class _SkeletonPath(Path):
         raise NotImplementedError("absolute() is not supported")
 
     def stat(self):
-        if (3,10) <= sys.version_info:
+        if (3, 10) <= sys.version_info:
             return
         raise NotImplementedError("stat() is not supported")
 

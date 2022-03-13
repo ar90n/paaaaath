@@ -182,7 +182,14 @@ def test_is_dir(gcsbucket, key, content, expect):
         ("glob", ["*.py"]),
         ("rglob", ["*.py"]),
         ("absolute", []),
-        pytest.param("stat", [], marks=pytest.mark.skipif((3,10) <= sys.version_info, reason="python 3.10 require stat implementation" )),
+        pytest.param(
+            "stat",
+            [],
+            marks=pytest.mark.skipif(
+                (3, 10) <= sys.version_info,
+                reason="python 3.10 require stat implementation",
+            ),
+        ),
         ("owner", []),
         ("readlink", []),
         ("chmod", [0x666]),
