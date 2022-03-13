@@ -79,7 +79,8 @@ class Path(PurePath, pathlib.Path):
                 "cannot instantiate %r on your system" % (cls.__name__,)
             )
 
-        self._init()  # type: ignore
+        if sys.version_info < (3, 10):
+            self._init()  # type: ignore
         return self
 
     @classmethod
@@ -163,12 +164,19 @@ class _SkeletonAccessor(pathlib._Accessor):  # type: ignore
     def group(cls, *args, **kwargs):
         raise NotImplementedError("group() is unsupported on this system")
 
+    @staticmethod
+    def realpath(path, *args, **kwargs):
+        import posixpath
+        return f"{path.drive}{path.root}{posixpath.normpath(path._flavour.join(path.parts[1:]))}"
+
 
 _skeleton_accessor = _SkeletonAccessor()
 
 
 class _SkeletonPath(Path):
     __slots__ = ()
+
+    _accessor = _skeleton_accessor
 
     def _init(self, template=None):
         super()._init(template)
@@ -194,6 +202,8 @@ class _SkeletonPath(Path):
         raise NotImplementedError("absolute() is not supported")
 
     def stat(self):
+        if (3,10) <= sys.version_info:
+            return
         raise NotImplementedError("stat() is not supported")
 
     def owner(self):
