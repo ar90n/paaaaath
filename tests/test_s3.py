@@ -165,7 +165,7 @@ def test_mkdir_fail(s3bucket, pathstr, expect):
     [
         ("key", "", False),
         ("key/", "", True),
-        #        ("key/", "abc", False), # SKIP: this case doesn't work with minio
+        pytest.param("key/a", "", True, marks=pytest.mark.skip(reason="minio doesn't support directories")),
         ("key/file", "", False),
         ("key/dir/", "", True),
     ],
