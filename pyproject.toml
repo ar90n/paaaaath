@@ -25,14 +25,13 @@ gcs = [ "google-cloud-storage"]
 s3 = [ "boto3"]
 all = ["requests", "google-cloud-storage", "boto3"]
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "^6.2.2"
 pytest-cov = "^2.11.1"
 pytest-xdist = "^2.2.1"
 pre-commit = "^2.10.1"
 pytest-black = "^0.3.12"
 pytest-mypy = "^0.8.0"
-wemake-python-styleguide = "^0.15.1"
 pytest-httpserver = "^0.3.8"
 bandit = "^1.7.0"
 wait-for-it = "^2.2.0"
@@ -40,8 +39,9 @@ boto3 = "^1.17.36"
 google-cloud-storage = "^1.36.2"
 requests = "^2.25.1"
 pysen = "^0.9.1"
-auto-changelog = "^0.5.3"
-conventional-commit = "^0.4.2"
+types-requests = "^2.28.11.2"
+commitizen = "^2.35.0"
+wemake-python-styleguide = "^0.17.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
