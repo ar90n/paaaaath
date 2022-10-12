@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "paaaaath"
-version = "0.2.5"
+version = "0.0.0"
 description = "a useful alternative Path object"
 authors = ["Masahiro Wada <argon.argon.argon@gmail.com>"]
 license = "MIT"
@@ -44,8 +44,8 @@ commitizen = "^2.35.0"
 wemake-python-styleguide = "^0.17.0"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
+build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.pysen]
 version = "0.9.1"
