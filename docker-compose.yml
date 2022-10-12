@@ -12,7 +12,7 @@ x-template: &test-template
     depends_on:
       - gcs
       - s3
-    command: sh -c "pip install poetry && poetry install && poetry run wait-for-it -s gcs:4443 -s s3:9000 -- pytest -n 4"
+    command: sh -c "pip install poetry && poetry install && poetry run sh -c \"wait-for-it -s gcs:4443 -s s3:9000 -- pytest -n 4\""
 
 services:
   test3.7:
