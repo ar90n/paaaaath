@@ -6,19 +6,22 @@ on:
     types: [published]
 
 jobs:
-  bump:
+  publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up Python 3.8
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: 3.8
+      - name: Set up poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python
+          poetry self add "poetry-dynamic-versioning[plugin]"
       - name: Publish package
         run: |
-          pip install poetry
-          poetry publish -u ar90n -p ${PYPI_PASSOWRD} -n --build
+          poetry publish --username=ar90n --password=${PYPI_PASSWORD} -n --build
         env:
-          PYPI_PASSOWRD: ${{ secrets.PYPI_PASSWORD }}
+          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
