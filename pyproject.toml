@@ -61,3 +61,9 @@ paths = ["paaaaath"]
 
 [tool.pysen.lint.source]
 excludes = ["tests"]
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "semver"
+
