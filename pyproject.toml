@@ -66,4 +66,3 @@ excludes = ["tests"]
 enable = true
 vcs = "git"
 style = "semver"
-
