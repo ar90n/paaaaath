@@ -147,7 +147,7 @@ Project Link: [https://github.com/ar90n/paaaaath](https://github.com/ar90n/paaaa
 [download-url]: https://pypi.org/project/paaaaath/
 [version-shield]: https://img.shields.io/pypi/v/paaaaath?style=for-the-badge
 [version-url]: https://pypi.org/project/paaaaath/
-[build-shiled]: https://img.shields.io/github/workflow/status/ar90n/paaaaath/CI?style=for-the-badge
+[build-shiled]: https://img.shields.io/github/actions/workflow/status/ar90n/paaaaath/ci.yml?style=for-the-badge
 [build-url]: https://github.com/ar90n/paaaaath/actions/workflows/ci.yml
 [contributors-shield]: https://img.shields.io/github/contributors/ar90n/paaaaath.svg?style=for-the-badge
 [contributors-url]: https://github.com/ar90n/paaaaath/graphs/contributors
