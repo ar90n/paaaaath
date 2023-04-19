@@ -28,7 +28,7 @@ services:
     <<: *test-template
     image: python:3.10
   gcs:
-    image: fsouza/fake-gcs-server
+    image: fsouza/fake-gcs-server:1.35
     entrypoint:
       - fake-gcs-server
       - -scheme
