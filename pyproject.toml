@@ -10,7 +10,7 @@ keywords = ["path", "s3", "gcs", "cloud"]
 
 
 [tool.poetry.dependencies]
-python = ">=3.7<3.11"
+python = ">=3.7,<3.11"
 smart-open = "^5.0"
 
 # optional
